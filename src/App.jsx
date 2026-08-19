@@ -8,14 +8,14 @@ import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import ReCAPTCHA from "react-google-recaptcha"; 
 
 // ----------------------------------------------------
-// MAIN SETTINGS (SEMUA INFO ANDA TELAH LENGKAP!)
+// MAIN SETTINGS
 // ----------------------------------------------------
 const WHATSAPP_NUMBER = "60194155722"; 
 const ADMIN_EMAILS = ['juscinta89@gmail.com']; 
 const QR_PAYMENT_URL = "https://i.postimg.cc/wjk126Zs/qr-code.png"; 
 const TELEGRAM_BOT_TOKEN = "8636588086:AAHTfHyVL5xCjBMG3R17oAaaeIzgwmodSEw"; 
 const TELEGRAM_CHAT_ID = "-5504733427"; 
-const RECAPTCHA_SITE_KEY = "6LfOWo0tAAAAAAf3PIhgPz4E0KfHJ3O2YxGBlM7F"; 
+const RECAPTCHA_SITE_KEY = "6LeVT40tAAAAANBT0pA5gUniT2dyuhWk5c0J07-9"; 
 
 const Icons = {
   Cart: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>,
@@ -499,13 +499,8 @@ export default function App() {
                 <input required type="file" name="receipt" accept="image/*,application/pdf" className="w-full border border-slate-700 rounded p-1.5 bg-slate-800 text-[10px] text-slate-300 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-blue-600 file:text-white" />
               </div>
 
-              {/* KOTAK RECAPTCHA DI SINI */}
               <div className="mb-4 flex justify-center">
-                <ReCAPTCHA
-                  sitekey={RECAPTCHA_SITE_KEY}
-                  onChange={(value) => setCaptchaValue(value)}
-                  theme="dark"
-                />
+                <ReCAPTCHA sitekey={RECAPTCHA_SITE_KEY} onChange={(value) => setCaptchaValue(value)} theme="dark" />
               </div>
 
               <button disabled={isSubmitting || region === '' || !captchaValue} type="submit" className={`w-full py-3 rounded-md font-bold text-xs uppercase tracking-wide flex justify-center items-center gap-2 ${(region !== '' && captchaValue) ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}>
@@ -558,7 +553,10 @@ export default function App() {
                 
                 <div className="mb-3">
                   {order.items?.map((item, idx) => (
-                    <div key={idx} className="flex gap-2 text-xs text-slate-700 mb-1"><span className="font-black text-blue-600 w-5">{item.quantity}x</span><span className="font-medium">{item.name}</span></div>
+                    <div key={idx} className="flex gap-2 text-xs text-slate-700 mb-1">
+                      <span className="font-black text-blue-600 w-5">{item.quantity}x</span>
+                      <span className="font-medium">{item.name}</span>
+                    </div>
                   ))}
                 </div>
 
@@ -627,6 +625,7 @@ export default function App() {
 
   const AdminOrdersView = () => {
     const [editingDelivery, setEditingDelivery] = useState(null);
+    const [viewingOrder, setViewingOrder] = useState(null); // <-- STATE UNTUK MODAL DETAIL
 
     const updateOrderStatus = async (docId, newStatus) => {
       await updateDoc(doc(db, "orders", docId), { status: newStatus });
@@ -655,7 +654,7 @@ export default function App() {
     };
 
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 relative">
         <h1 className="text-xl font-black text-slate-900 mb-5">Manage Orders</h1>
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
             <div className="overflow-x-auto">
@@ -683,6 +682,10 @@ export default function App() {
                           ))}
                         </ul>
                         <p className="font-black text-blue-600 text-xs">RM {order.total.toFixed(2)}</p>
+                        {/* BUTANG UNTUK BUKA MODAL */}
+                        <button onClick={() => setViewingOrder(order)} className="mt-2 text-[9px] font-bold bg-blue-50 text-blue-600 border border-blue-100 px-2 py-1 rounded w-full hover:bg-blue-100">
+                          Lihat Detail & Nota
+                        </button>
                       </td>
                       
                       <td className="p-3 align-top">
@@ -726,6 +729,66 @@ export default function App() {
               </table>
             </div>
           </div>
+
+          {/* ======================================= */}
+          {/* MODAL POP-UP UNTUK DETAIL & NOTA ORDER  */}
+          {/* ======================================= */}
+          {viewingOrder && (
+            <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+                <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                  <h2 className="font-black text-lg text-slate-900">Detail Pesanan: {viewingOrder.orderId}</h2>
+                  <button onClick={() => setViewingOrder(null)} className="p-1 text-slate-400 hover:bg-slate-200 hover:text-red-500 rounded"><Icons.X /></button>
+                </div>
+                
+                <div className="p-5 overflow-y-auto space-y-6 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Maklumat Pelanggan</p>
+                      <p className="font-black text-slate-900">{viewingOrder.customerName}</p>
+                      <p className="text-slate-600 text-xs mt-0.5 font-medium">{viewingOrder.phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Alamat Penghantaran</p>
+                      <span className="text-[9px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded uppercase tracking-widest">{viewingOrder.region}</span>
+                      <p className="text-slate-600 text-xs mt-1.5 leading-relaxed">{viewingOrder.address}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">Senarai Barang & Nota</p>
+                    <div className="space-y-3">
+                      {viewingOrder.items?.map((item, idx) => (
+                        <div key={idx} className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                          <div className="flex justify-between items-start mb-2 border-b border-slate-50 pb-2">
+                            <p className="font-bold text-slate-900 text-sm">
+                              <span className="text-blue-600 mr-1">{item.quantity}x</span> {item.name}
+                            </p>
+                            <p className="font-black text-slate-900 text-sm">RM {(item.price * item.quantity).toFixed(2)}</p>
+                          </div>
+                          {item.notes ? (
+                            <div className="bg-amber-50 border border-amber-200 p-2.5 rounded text-xs text-amber-900">
+                              <span className="font-black uppercase tracking-wider block mb-0.5">💬 Nota Pelanggan:</span> {item.notes}
+                            </div>
+                          ) : (
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Tiada nota tambahan</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-900 text-white p-5 rounded-lg flex flex-col md:flex-row justify-between items-center gap-3">
+                    <div className="text-center md:text-left">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Jumlah Perlu Dibayar</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Termasuk kos pos RM {viewingOrder.shippingFee?.toFixed(2)}</p>
+                    </div>
+                    <p className="text-3xl font-black text-blue-400">RM {viewingOrder.total.toFixed(2)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
       </div>
     );
   };
@@ -862,7 +925,6 @@ export default function App() {
     );
   }
 
-  // --- RECEIPT VIEW ---
   const ReceiptView = () => {
     if (!selectedOrder) return null;
     return (
