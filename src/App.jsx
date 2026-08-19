@@ -1,22 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth, googleProvider, storage } from './firebase';
 import { 
-  collection, getDocs, addDoc, updateDoc, doc, deleteDoc, onSnapshot, query, orderBy, increment, where 
+  collection, getDocs, addDoc, updateDoc, doc, deleteDoc, onSnapshot, query, orderBy, increment, where, setDoc, getDoc 
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import ReCAPTCHA from "react-google-recaptcha"; 
 
 // ----------------------------------------------------
-// MAIN SETTINGS (KUNCI RECAPTCHA BAHARU DIMASUKKAN)
+// MAIN SETTINGS
 // ----------------------------------------------------
 const WHATSAPP_NUMBER = "60194155722"; 
 const ADMIN_EMAILS = ['juscinta89@gmail.com']; 
 const QR_PAYMENT_URL = "https://i.postimg.cc/wjk126Zs/qr-code.png"; 
 const TELEGRAM_BOT_TOKEN = "8636588086:AAHTfHyVL5xCjBMG3R17oAaaeIzgwmodSEw"; 
 const TELEGRAM_CHAT_ID = "-5504733427"; 
-
-// INI KUNCI BARU ANDA
 const RECAPTCHA_SITE_KEY = "6LdqCo4tAAAAAF_VE2TTRCIo41RARvKcoBRP-DoC"; 
 
 const Icons = {
@@ -44,7 +42,9 @@ const Icons = {
   Search: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>,
   FileUp: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><polyline points="9 15 12 12 15 15"></polyline></svg>,
   ShieldCheck: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>,
-  MessageSquare: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+  MessageSquare: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>,
+  User: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>,
+  ChevronDown: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
 };
 
 const MOCK_CATEGORIES = ['3D PRINT', 'ROBOT PARTS', 'ELECTRONICS', 'STEM / EDUCATION', 'CUSTOM 3D PRINT'];
@@ -191,7 +191,10 @@ export default function App() {
           </button>
           
           {user && user.role !== 'admin' && (
-            <button onClick={() => navigateTo('myorders')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'myorders' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Orders /> My Orders</button>
+            <>
+              <button onClick={() => navigateTo('myorders')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'myorders' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Orders /> My Orders</button>
+              <button onClick={() => navigateTo('profile')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'profile' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.User /> My Profile</button>
+            </>
           )}
 
           <button onClick={() => navigateTo('policies')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'policies' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
@@ -225,25 +228,45 @@ export default function App() {
     </>
   );
 
-  const TopHeader = () => (
-    <div className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 h-14 flex items-center justify-between px-4 sm:px-6 print:hidden">
-      <div className="flex items-center gap-3">
-        <button onClick={() => setIsSidebarOpen(true)} className="md:hidden text-slate-600 p-2 -ml-2 rounded-lg hover:bg-slate-100"><Icons.Menu /></button>
-        <div className="md:hidden flex items-center gap-2">
-          <img src={LOGO_URL} alt="Logo" className="w-7 h-7 object-contain" onError={(e) => e.target.style.display='none'} />
-          <span className="text-lg font-black tracking-tighter text-blue-600">3D<span className="text-slate-900">STORE</span></span>
+  const TopHeader = () => {
+    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+    return (
+      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 h-14 flex items-center justify-between px-4 sm:px-6 print:hidden">
+        <div className="flex items-center gap-3">
+          <button onClick={() => setIsSidebarOpen(true)} className="md:hidden text-slate-600 p-2 -ml-2 rounded-lg hover:bg-slate-100"><Icons.Menu /></button>
+          <div className="md:hidden flex items-center gap-2">
+            <img src={LOGO_URL} alt="Logo" className="w-7 h-7 object-contain" onError={(e) => e.target.style.display='none'} />
+            <span className="text-lg font-black tracking-tighter text-blue-600">3D<span className="text-slate-900">STORE</span></span>
+          </div>
+          <h2 className="hidden md:block text-lg font-black text-slate-800 capitalize tracking-wide">{view === 'home' ? 'Store' : view.replace('_', ' ')}</h2>
         </div>
-        <h2 className="hidden md:block text-lg font-black text-slate-800 capitalize tracking-wide">{view === 'home' ? 'Store' : view.replace('_', ' ')}</h2>
+        
+        <div className="flex items-center gap-4">
+           {/* DROPDOWN MENU PROFIL */}
+           {user && (
+             <div className="relative hidden md:block">
+               <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="text-sm font-bold text-slate-600 hover:text-blue-600 flex items-center gap-1.5 transition-colors">
+                 Hi, {user.name.split(' ')[0]} <Icons.ChevronDown />
+               </button>
+               {isProfileMenuOpen && (
+                 <div className="absolute right-0 mt-3 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
+                   <button onClick={() => {navigateTo('profile'); setIsProfileMenuOpen(false);}} className="w-full text-left px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 border-b border-slate-50 flex items-center gap-2"><Icons.User /> My Profile</button>
+                   <button onClick={() => {navigateTo('myorders'); setIsProfileMenuOpen(false);}} className="w-full text-left px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 border-b border-slate-50 flex items-center gap-2"><Icons.Orders /> My Orders</button>
+                   <button onClick={() => {handleLogout(); setIsProfileMenuOpen(false);}} className="w-full text-left px-4 py-3 text-xs font-bold text-red-500 hover:bg-red-50 flex items-center gap-2"><Icons.LogOut /> Logout</button>
+                 </div>
+               )}
+             </div>
+           )}
+           
+           <button onClick={() => navigateTo('cart')} className="relative p-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full">
+             <Icons.Cart />
+             {cart.length > 0 && <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full shadow-sm">{cart.length}</span>}
+           </button>
+        </div>
       </div>
-      <div className="flex items-center gap-4">
-         {user && <span className="hidden md:block text-sm font-bold text-slate-500">Hi, {user.name.split(' ')[0]}</span>}
-         <button onClick={() => navigateTo('cart')} className="relative p-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full">
-           <Icons.Cart />
-           {cart.length > 0 && <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full shadow-sm">{cart.length}</span>}
-         </button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const HomeView = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -293,22 +316,45 @@ export default function App() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredProducts.map(product => (
-                <div key={product.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                  <div className="relative aspect-square overflow-hidden bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100">
-                    <img src={product.image || 'https://placehold.co/400x400?text=No+Image'} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={product.name} className="w-full h-full object-contain" />
+                <div key={product.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+                  <div className="relative aspect-square overflow-hidden bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100 cursor-pointer" onClick={() => navigateTo('product', product)}>
+                    <img src={product.image || 'https://placehold.co/400x400?text=No+Image'} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={product.name} className="w-full h-full object-contain hover:scale-105 transition-transform duration-300" />
                     <div className="absolute top-2 left-2 bg-white/90 backdrop-blur text-[9px] font-bold px-2 py-1 rounded text-slate-700 uppercase tracking-wide border border-slate-200">{product.category}</div>
+                    
+                    {/* Lencana Diskaun jika ada harga potong */}
+                    {product.originalPrice && product.originalPrice > product.price && (
+                      <div className="absolute top-2 right-2 bg-red-600 text-white text-[9px] font-black px-2 py-1 rounded uppercase tracking-widest shadow-sm">- SALE</div>
+                    )}
                   </div>
+                  
                   <div className="p-4 flex-grow flex flex-col justify-between">
                     <div>
-                      <h3 className="font-bold text-slate-900 mb-1 leading-tight text-sm">{product.name}</h3>
+                      <h3 className="font-bold text-slate-900 mb-1 leading-tight text-sm cursor-pointer hover:text-blue-600 transition-colors" onClick={() => navigateTo('product', product)}>{product.name}</h3>
                       <p className="text-xs text-slate-500 mb-3 line-clamp-2">{product.description}</p>
                     </div>
                     <div>
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="text-base font-black text-blue-600">RM {product.price.toFixed(2)}</span>
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="flex flex-col">
+                          {/* PAPARAN HARGA DISKAUN / POTONG */}
+                          {product.originalPrice && product.originalPrice > product.price ? (
+                            <>
+                              <span className="text-xl font-black text-red-600">RM {product.price.toFixed(2)}</span>
+                              <span className="text-[10px] font-bold text-slate-400 line-through">RM {product.originalPrice.toFixed(2)}</span>
+                            </>
+                          ) : (
+                            <span className="text-xl font-black text-slate-900">RM {product.price.toFixed(2)}</span>
+                          )}
+                        </div>
                         <span className={`text-[9px] font-bold px-2 py-1 rounded uppercase tracking-wide ${product.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>{product.stock > 0 ? `Stock: ${product.stock}` : 'Sold Out'}</span>
                       </div>
-                      <button onClick={() => navigateTo('product', product)} className="w-full py-2 bg-slate-900 text-white rounded-md font-bold text-xs flex justify-center items-center gap-2">View Details</button>
+
+                      {/* BUTANG ADD TO CART PADA KAD */}
+                      <div className="flex gap-2">
+                        <button onClick={() => navigateTo('product', product)} className="flex-1 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-md font-bold text-xs transition-colors flex justify-center items-center">Details</button>
+                        <button disabled={product.stock <= 0} onClick={() => { addToCart(product, 1); alert(`${product.name} berjaya ditambah ke troli!`); }} className={`flex-1 py-2.5 rounded-md font-bold text-xs text-white transition-colors flex justify-center items-center ${product.stock > 0 ? 'bg-blue-600 hover:bg-blue-700 shadow-sm' : 'bg-slate-300 cursor-not-allowed'}`}>
+                          Add to Cart
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -328,7 +374,7 @@ export default function App() {
 
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-        <button onClick={() => navigateTo('home')} className="flex items-center text-slate-500 font-bold mb-4 text-sm gap-1 w-fit">
+        <button onClick={() => navigateTo('home')} className="flex items-center text-slate-500 font-bold mb-4 text-sm gap-1 w-fit hover:text-blue-600 transition-colors">
           <Icons.ArrowLeft /> Back
         </button>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row">
@@ -338,12 +384,20 @@ export default function App() {
           <div className="md:w-1/2 p-6 lg:p-10 flex flex-col justify-center">
             <span className="text-blue-600 font-bold text-[10px] tracking-widest uppercase mb-1">{selectedProduct.category}</span>
             <h1 className="text-2xl font-black text-slate-900 mb-3">{selectedProduct.name}</h1>
-            <p className="text-slate-600 text-sm mb-6">{selectedProduct.description}</p>
+            <p className="text-slate-600 text-sm mb-6 leading-relaxed">{selectedProduct.description}</p>
             
             <div className="mb-6 border-b border-slate-100 pb-6 flex justify-between items-center">
-              <div>
-                <span className="text-3xl font-black text-slate-900 block">RM {selectedProduct.price.toFixed(2)}</span>
-                <span className="text-xs text-slate-400 font-bold mt-1 block">Weight: {selectedProduct.weight || 100}g / unit</span>
+              <div className="flex flex-col">
+                 {/* HARGA DISKAUN DALAM VIEW DETAIL */}
+                 {selectedProduct.originalPrice && selectedProduct.originalPrice > selectedProduct.price ? (
+                    <>
+                      <span className="text-4xl font-black text-red-600">RM {selectedProduct.price.toFixed(2)}</span>
+                      <span className="text-sm font-bold text-slate-400 line-through mt-1">Harga Asal: RM {selectedProduct.originalPrice.toFixed(2)}</span>
+                    </>
+                  ) : (
+                    <span className="text-4xl font-black text-slate-900 block">RM {selectedProduct.price.toFixed(2)}</span>
+                  )}
+                <span className="text-xs text-slate-400 font-bold mt-2 block">Berat: {selectedProduct.weight || 100}g / unit</span>
               </div>
               <span className={`px-3 py-1 rounded font-bold text-xs uppercase tracking-wide ${selectedProduct.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>{selectedProduct.stock > 0 ? `Stock: ${selectedProduct.stock}` : 'Sold Out'}</span>
             </div>
@@ -352,18 +406,18 @@ export default function App() {
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Quantity</label>
                 <div className="flex items-center border border-slate-200 rounded-lg w-28 bg-slate-50">
-                  <button onClick={() => setQty(Math.max(1, qty - 1))} className="p-2.5 text-slate-500"><Icons.Minus /></button>
+                  <button onClick={() => setQty(Math.max(1, qty - 1))} className="p-2.5 text-slate-500 hover:text-blue-600"><Icons.Minus /></button>
                   <span className="flex-1 text-center font-bold text-sm">{qty}</span>
-                  <button onClick={() => setQty(Math.min(selectedProduct.stock, qty + 1))} className="p-2.5 text-slate-500"><Icons.Plus /></button>
+                  <button onClick={() => setQty(Math.min(selectedProduct.stock, qty + 1))} className="p-2.5 text-slate-500 hover:text-blue-600"><Icons.Plus /></button>
                 </div>
               </div>
               
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Notes</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows="2" className="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none" placeholder="e.g. Senarai nama untuk nametag..."></textarea>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows="2" className="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition-colors" placeholder="e.g. Senarai nama untuk nametag..."></textarea>
               </div>
 
-              <button onClick={() => { addToCart(selectedProduct, qty, notes); navigateTo('cart'); }} disabled={selectedProduct.stock <= 0} className={`w-full py-3.5 rounded-lg font-bold text-sm uppercase tracking-wide flex justify-center items-center gap-2 ${selectedProduct.stock > 0 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}>
+              <button onClick={() => { addToCart(selectedProduct, qty, notes); navigateTo('cart'); }} disabled={selectedProduct.stock <= 0} className={`w-full py-3.5 rounded-lg font-bold text-sm uppercase tracking-wide flex justify-center items-center gap-2 ${selectedProduct.stock > 0 ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}>
                 <Icons.Cart /> {selectedProduct.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
               </button>
             </div>
@@ -405,7 +459,7 @@ export default function App() {
                     <span className="w-6 text-center font-bold text-xs">{item.quantity}</span>
                     <button onClick={() => updateQuantity(item.cartItemId, 1)} className="p-2 text-slate-500"><Icons.Plus /></button>
                   </div>
-                  <button onClick={() => removeFromCart(item.cartItemId)} className="p-2 text-red-500 bg-red-50 rounded-md"><Icons.Trash /></button>
+                  <button onClick={() => removeFromCart(item.cartItemId)} className="p-2 text-red-500 bg-red-50 rounded-md hover:bg-red-100"><Icons.Trash /></button>
                 </div>
               </div>
             ))}
@@ -417,7 +471,7 @@ export default function App() {
                 <div className="flex justify-between text-xs text-slate-500 font-medium"><span>Total Weight</span><span>{(cartTotalWeight / 1000).toFixed(2)} KG</span></div>
               </div>
               <div className="flex justify-between mb-5 text-lg font-black text-slate-900"><span>Total</span><span>RM {cartSubtotal.toFixed(2)}</span></div>
-              <button onClick={() => navigateTo('checkout')} className="w-full bg-blue-600 text-white py-3 rounded-md font-bold text-xs uppercase tracking-wide">Checkout</button>
+              <button onClick={() => navigateTo('checkout')} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-md font-bold text-xs uppercase tracking-wide transition-colors">Checkout</button>
             </div>
           </div>
         </div>
@@ -429,6 +483,20 @@ export default function App() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [region, setRegion] = useState('');
     const [captchaValue, setCaptchaValue] = useState(null); 
+    const [userProfile, setUserProfile] = useState(null);
+
+    // Tarik data profil automatik jika ada
+    useEffect(() => {
+      if(user?.uid) {
+         getDoc(doc(db, "users", user.uid)).then(docSnap => {
+            if(docSnap.exists()) {
+               const data = docSnap.data();
+               setUserProfile(data);
+               if(data.region) setRegion(data.region);
+            }
+         });
+      }
+    }, [user]);
 
     let shippingFee = 0;
     if (cartTotalWeight > 0 && region !== '') {
@@ -480,21 +548,17 @@ export default function App() {
         }
         
         if (TELEGRAM_BOT_TOKEN !== "LETAK_TOKEN_BOT_DI_SINI" && TELEGRAM_CHAT_ID !== "LETAK_CHAT_ID_DI_SINI") {
-          const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
           const telegramMessage = `🚨 *ORDER BARU MASUK!*\n\n*ID:* \`${orderId}\`\n*Pelanggan:* ${orderData.customerName}\n*Lokasi:* ${orderData.region}\n*Total:* RM ${grandTotal.toFixed(2)}\n\nSila semak Papan Pemuka Admin segera!`;
-          
           try {
-            await fetch(telegramUrl, {
+            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramMessage, parse_mode: 'Markdown' })
             });
-          } catch (err) { console.log("Telegram Notif Error: ", err); }
+          } catch (err) {}
         }
 
-        let waText = `*NEW ORDER (3D STORE)*\n\n`;
-        waText += `*Order ID:* ${orderId}\n*Name:* ${orderData.customerName}\n*Phone:* ${orderData.phone}\n`;
-        waText += `*Address:* ${orderData.address}\n*Region:* ${orderData.region}\n\n*Items:*\n`;
+        let waText = `*NEW ORDER (3D STORE)*\n\n*Order ID:* ${orderId}\n*Name:* ${orderData.customerName}\n*Phone:* ${orderData.phone}\n*Address:* ${orderData.address}\n*Region:* ${orderData.region}\n\n*Items:*\n`;
         cart.forEach(item => {
            waText += `- ${item.quantity}x ${item.name} (RM ${item.price.toFixed(2)})\n`;
            if (item.notes) waText += `  _Notes:\n${item.notes}_\n`;
@@ -521,17 +585,17 @@ export default function App() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Full Name *</label><input required name="name" defaultValue={user?.name || ''} className="w-full border border-slate-200 rounded p-2 text-sm outline-none" /></div>
-                <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Phone No *</label><input required name="phone" type="tel" className="w-full border border-slate-200 rounded p-2 text-sm outline-none" placeholder="0194155722" /></div>
+                <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Phone No *</label><input required name="phone" type="tel" defaultValue={userProfile?.phone || ''} className="w-full border border-slate-200 rounded p-2 text-sm outline-none" placeholder="0194155722" /></div>
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Region *</label>
-                <select required value={region} onChange={(e) => setRegion(e.target.value)} className="w-full border border-slate-200 rounded p-2 text-sm outline-none font-medium">
+                <select required value={region} onChange={(e) => setRegion(e.target.value)} className="w-full border border-slate-200 rounded p-2 text-sm outline-none font-medium bg-white">
                   <option value="" disabled>Select Region...</option>
                   <option value="Semenanjung">Peninsular Malaysia</option>
                   <option value="Sabah / Sarawak">Sabah & Sarawak</option>
                 </select>
               </div>
-              <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Full Address *</label><textarea required name="address" rows="3" className="w-full border border-slate-200 rounded p-2 text-sm outline-none"></textarea></div>
+              <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Full Address *</label><textarea required name="address" rows="3" defaultValue={userProfile?.address || ''} className="w-full border border-slate-200 rounded p-2 text-sm outline-none"></textarea></div>
             </div>
           </div>
           <div className="lg:w-[350px]">
@@ -559,13 +623,83 @@ export default function App() {
                 <ReCAPTCHA sitekey={RECAPTCHA_SITE_KEY} onChange={(value) => setCaptchaValue(value)} theme="dark" />
               </div>
 
-              <button disabled={isSubmitting || region === '' || !captchaValue} type="submit" className={`w-full py-3 rounded-md font-bold text-xs uppercase tracking-wide flex justify-center items-center gap-2 ${(region !== '' && captchaValue) ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}>
+              <button disabled={isSubmitting || region === '' || !captchaValue} type="submit" className={`w-full py-3 rounded-md font-bold text-xs uppercase tracking-wide flex justify-center items-center gap-2 ${(region !== '' && captchaValue) ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}>
                 {isSubmitting ? 'Processing...' : `Confirm Order`}
               </button>
             </div>
           </div>
         </form>
       </div>
+    );
+  };
+
+  // ==========================================
+  // VIEW BAHARU: SETTING PROFIL PENGGUNA
+  // ==========================================
+  const ProfileView = () => {
+    const [saving, setSaving] = useState(false);
+    const [profileData, setProfileData] = useState({ phone: '', address: '', region: '' });
+
+    useEffect(() => {
+      if(user?.uid) {
+         getDoc(doc(db, "users", user.uid)).then(docSnap => {
+            if(docSnap.exists()) setProfileData(docSnap.data());
+         });
+      }
+    }, [user]);
+
+    const saveProfile = async (e) => {
+       e.preventDefault();
+       setSaving(true);
+       const formData = new FormData(e.target);
+       const data = {
+          phone: formData.get('phone'),
+          address: formData.get('address'),
+          region: formData.get('region')
+       };
+       try {
+         await setDoc(doc(db, "users", user.uid), data, { merge: true });
+         setProfileData(data);
+         alert('Profil berjaya disimpan! Maklumat ini akan diisi secara automatik semasa Checkout.');
+       } catch (err) {
+         alert("Ralat menyimpan profil: " + err.message);
+       }
+       setSaving(false);
+    };
+
+    if(!user) return null;
+
+    return (
+       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
+          <h1 className="text-2xl font-black mb-6 text-slate-900">My Profile</h1>
+          <form onSubmit={saveProfile} className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+               <div><label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Nama Akaun Google</label><input disabled value={user.name} className="w-full border border-slate-200 bg-slate-50 rounded-lg p-3 outline-none text-slate-500 font-bold" /></div>
+               <div><label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Email</label><input disabled value={user.email} className="w-full border border-slate-200 bg-slate-50 rounded-lg p-3 outline-none text-slate-500 font-bold" /></div>
+             </div>
+             
+             <hr className="border-slate-100 my-4" />
+             <p className="text-xs text-slate-500 font-medium mb-2">Maklumat di bawah akan digunakan secara automatik untuk penghantaran pesanan anda kelak.</p>
+
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+               <div><label className="block text-xs font-bold text-slate-700 mb-1">No. Telefon</label><input name="phone" defaultValue={profileData.phone} className="w-full border border-slate-200 rounded-lg p-3 outline-none focus:border-blue-500" placeholder="Contoh: 0194155722" /></div>
+               <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Region Penghantaran</label>
+                  <select name="region" defaultValue={profileData.region} className="w-full border border-slate-200 rounded-lg p-3 outline-none font-medium bg-white focus:border-blue-500">
+                    <option value="">Sila Pilih...</option>
+                    <option value="Semenanjung">Semenanjung Malaysia</option>
+                    <option value="Sabah / Sarawak">Sabah & Sarawak</option>
+                  </select>
+               </div>
+             </div>
+             
+             <div><label className="block text-xs font-bold text-slate-700 mb-1">Alamat Penuh Penghantaran</label><textarea name="address" defaultValue={profileData.address} rows="3" placeholder="No Rumah, Jalan, Poskod, Daerah, Negeri" className="w-full border border-slate-200 rounded-lg p-3 outline-none focus:border-blue-500"></textarea></div>
+             
+             <button disabled={saving} type="submit" className={`w-full text-white py-3.5 rounded-lg font-bold text-sm shadow-md transition-colors ${saving ? 'bg-slate-400' : 'bg-blue-600 hover:bg-blue-700'}`}>
+                {saving ? 'Menyimpan...' : 'Simpan Tetapan Profil'}
+             </button>
+          </form>
+       </div>
     );
   };
 
@@ -632,10 +766,10 @@ export default function App() {
         
         <form onSubmit={handleCustomSubmit} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div><label className="block text-xs font-bold text-slate-700 mb-1">Nama Penuh *</label><input required name="name" className="w-full border border-slate-200 rounded p-2.5 outline-none" /></div>
+            <div><label className="block text-xs font-bold text-slate-700 mb-1">Nama Penuh *</label><input required name="name" defaultValue={user?.name || ''} className="w-full border border-slate-200 rounded p-2.5 outline-none" /></div>
             <div><label className="block text-xs font-bold text-slate-700 mb-1">No. Telefon *</label><input required name="phone" className="w-full border border-slate-200 rounded p-2.5 outline-none" /></div>
           </div>
-          <div><label className="block text-xs font-bold text-slate-700 mb-1">Email (Pilihan)</label><input type="email" name="email" className="w-full border border-slate-200 rounded p-2.5 outline-none" /></div>
+          <div><label className="block text-xs font-bold text-slate-700 mb-1">Email (Pilihan)</label><input type="email" name="email" defaultValue={user?.email || ''} className="w-full border border-slate-200 rounded p-2.5 outline-none" /></div>
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">Keterangan / Detail Rekaan *</label>
             <textarea required name="description" rows="4" placeholder="Cth: Saya nak print kotak untuk Arduino, warna hitam, material PETG..." className="w-full border border-slate-200 rounded p-2.5 outline-none whitespace-pre-wrap"></textarea>
@@ -650,7 +784,7 @@ export default function App() {
              <ReCAPTCHA sitekey={RECAPTCHA_SITE_KEY} onChange={(value) => setCaptchaValue(value)} />
           </div>
 
-          <button disabled={isSubmitting || !captchaValue} type="submit" className={`w-full py-3.5 rounded-lg font-bold text-sm text-white transition-colors ${!captchaValue ? 'bg-slate-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
+          <button disabled={isSubmitting || !captchaValue} type="submit" className={`w-full py-3.5 rounded-lg font-bold text-sm text-white transition-colors ${!captchaValue ? 'bg-slate-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-md'}`}>
             {isSubmitting ? 'Menghantar...' : 'Hantar Permintaan (Request Quote)'}
           </button>
         </form>
@@ -721,7 +855,7 @@ export default function App() {
         ) : (
           <div className="space-y-4">
             {orders.map(order => (
-              <div key={order.id} className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200">
+              <div key={order.id} className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-sm">
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-slate-100 pb-3 mb-3 gap-3">
                   <div>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Order ID</p>
@@ -730,7 +864,7 @@ export default function App() {
                   </div>
                   <div className="flex flex-col sm:items-end gap-2">
                     <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${order.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : order.status === 'POSTED' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>{order.status}</span>
-                    <button onClick={() => navigateTo('receipt', order)} className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Icons.Printer /> Print Receipt</button>
+                    <button onClick={() => navigateTo('receipt', order)} className="text-[10px] font-bold text-slate-500 flex items-center gap-1 hover:text-blue-600"><Icons.Printer /> Print Receipt</button>
                   </div>
                 </div>
                 
@@ -799,7 +933,7 @@ export default function App() {
           <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 text-white">
             <p className="text-slate-400 text-[9px] font-bold uppercase tracking-widest">Pending Orders</p>
             <p className="text-xl font-black text-white mt-1">{pendingCount}</p>
-            <button onClick={()=>navigateTo('admin_orders')} className="mt-2 text-[10px] font-bold bg-white/10 px-2 py-1 rounded w-full">Manage</button>
+            <button onClick={()=>navigateTo('admin_orders')} className="mt-2 text-[10px] font-bold bg-white/10 px-2 py-1 rounded w-full hover:bg-white/20 transition-colors">Manage</button>
           </div>
         </div>
       </div>
@@ -839,7 +973,7 @@ export default function App() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 relative">
         <h1 className="text-xl font-black text-slate-900 mb-5">Manage Orders</h1>
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[9px] tracking-wider border-b border-slate-100">
@@ -865,7 +999,7 @@ export default function App() {
                           ))}
                         </ul>
                         <p className="font-black text-blue-600 text-xs">RM {order.total.toFixed(2)}</p>
-                        <button onClick={() => setViewingOrder(order)} className="mt-2 text-[9px] font-bold bg-blue-50 text-blue-600 border border-blue-100 px-2 py-1 rounded w-full hover:bg-blue-100">
+                        <button onClick={() => setViewingOrder(order)} className="mt-2 text-[9px] font-bold bg-blue-50 text-blue-600 border border-blue-100 px-2 py-1 rounded w-full hover:bg-blue-100 transition-colors">
                           Lihat Detail & Nota
                         </button>
                       </td>
@@ -876,8 +1010,8 @@ export default function App() {
                             <input required name="trackingNumber" placeholder="Tracking No." defaultValue={order.trackingNumber||''} className="w-full text-[10px] p-1 border rounded outline-none" />
                             <input type="file" name="deliveryProof" accept="image/*,application/pdf" className="w-full text-[9px]" />
                             <div className="flex gap-1">
-                              <button type="submit" className="flex-1 bg-blue-600 text-white py-0.5 rounded text-[9px] font-bold">Save</button>
-                              <button type="button" onClick={()=>setEditingDelivery(null)} className="flex-1 bg-slate-200 text-slate-700 py-0.5 rounded text-[9px] font-bold">Cancel</button>
+                              <button type="submit" className="flex-1 bg-blue-600 text-white py-0.5 rounded text-[9px] font-bold hover:bg-blue-700">Save</button>
+                              <button type="button" onClick={()=>setEditingDelivery(null)} className="flex-1 bg-slate-200 text-slate-700 py-0.5 rounded text-[9px] font-bold hover:bg-slate-300">Cancel</button>
                             </div>
                           </form>
                         ) : (
@@ -888,7 +1022,7 @@ export default function App() {
                                 {order.deliveryProofUrl && <a href={order.deliveryProofUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold mb-1 inline-block">View</a>}
                               </>
                             ) : <p className="text-[9px] text-slate-400 italic mb-1">Not shipped</p>}
-                            <button onClick={()=>setEditingDelivery(order.id)} className="text-[9px] bg-white border border-slate-200 px-1.5 py-0.5 rounded font-bold text-slate-600"><Icons.Truck /> Update</button>
+                            <button onClick={()=>setEditingDelivery(order.id)} className="text-[9px] bg-white border border-slate-200 px-1.5 py-0.5 rounded font-bold text-slate-600 hover:bg-slate-50"><Icons.Truck /> Update</button>
                           </div>
                         )}
                       </td>
@@ -901,8 +1035,8 @@ export default function App() {
                           <option value="COMPLETED">COMPLETED</option>
                         </select>
                         <div className="flex gap-1 w-24">
-                          <button onClick={() => navigateTo('receipt', order)} className="flex-1 bg-white border border-slate-200 text-slate-600 p-1 rounded flex justify-center"><Icons.Printer /></button>
-                          <button onClick={() => handleDeleteOrder(order.id)} className="flex-1 bg-red-50 border border-red-100 text-red-500 p-1 rounded flex justify-center"><Icons.Trash /></button>
+                          <button onClick={() => navigateTo('receipt', order)} className="flex-1 bg-white border border-slate-200 text-slate-600 p-1 rounded flex justify-center hover:bg-slate-50"><Icons.Printer /></button>
+                          <button onClick={() => handleDeleteOrder(order.id)} className="flex-1 bg-red-50 border border-red-100 text-red-500 p-1 rounded flex justify-center hover:bg-red-100"><Icons.Trash /></button>
                         </div>
                       </td>
                     </tr>
@@ -958,7 +1092,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="bg-slate-900 text-white p-5 rounded-lg flex flex-col md:flex-row justify-between items-center gap-3">
+                  <div className="bg-slate-900 text-white p-5 rounded-lg flex flex-col md:flex-row justify-between items-center gap-3 shadow-md">
                     <div className="text-center md:text-left">
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Jumlah Perlu Dibayar</p>
                       <p className="text-[10px] text-slate-400 mt-1">Termasuk kos pos RM {viewingOrder.shippingFee?.toFixed(2)}</p>
@@ -985,7 +1119,7 @@ export default function App() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <h1 className="text-xl font-black text-slate-900 mb-5">Manage Custom Quotes</h1>
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[9px] tracking-wider border-b border-slate-100">
@@ -1044,6 +1178,10 @@ export default function App() {
         name: formData.get('name'),
         category: formData.get('category'),
         price: parseFloat(formData.get('price')),
+        
+        // FUNGSI BAHARU: HARGA ASAL UNTUK DISKAUN
+        originalPrice: formData.get('originalPrice') ? parseFloat(formData.get('originalPrice')) : null,
+        
         stock: parseInt(formData.get('stock')),
         weight: parseInt(formData.get('weight')) || 100, 
         description: formData.get('description'),
@@ -1076,7 +1214,7 @@ export default function App() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <h1 className="text-xl font-black text-slate-900 mb-5">Manage Products</h1>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 bg-white p-5 rounded-xl border border-slate-200 h-fit">
+            <div className="lg:col-span-1 bg-white p-5 rounded-xl border border-slate-200 h-fit shadow-sm">
               <h2 className="font-bold text-sm mb-4 text-slate-800">
                 {editingProduct ? 'Edit Product' : 'Add New Product'}
               </h2>
@@ -1092,11 +1230,17 @@ export default function App() {
                     {MOCK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Price</label>
-                    <input required type="number" step="0.01" name="price" defaultValue={editingProduct?.price || ''} className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" />
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-red-50 p-1.5 rounded border border-red-100">
+                    <label className="text-[9px] font-bold text-red-500 uppercase tracking-widest">Harga Jual (Selepas Diskaun)</label>
+                    <input required type="number" step="0.01" name="price" defaultValue={editingProduct?.price || ''} className="w-full border border-red-200 rounded p-1.5 text-xs outline-none" />
                   </div>
+                  <div className="bg-slate-50 p-1.5 rounded border border-slate-100">
+                    <label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Harga Asal (Harga Potong)</label>
+                    <input type="number" step="0.01" name="originalPrice" defaultValue={editingProduct?.originalPrice || ''} placeholder="Kosongkan jika tiada" className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Stock</label>
                     <input required type="number" name="stock" defaultValue={editingProduct?.stock || ''} className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" />
@@ -1115,11 +1259,11 @@ export default function App() {
                   <textarea required name="description" defaultValue={editingProduct?.description || ''} rows="2" className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none"></textarea>
                 </div>
                 <div className="flex gap-2 pt-1">
-                  <button disabled={isAdding} type="submit" className="flex-1 bg-blue-600 text-white font-bold py-2 rounded text-xs">
+                  <button disabled={isAdding} type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded text-xs transition-colors">
                     {isAdding ? 'Saving...' : (editingProduct ? 'Update' : 'Save')}
                   </button>
                   {editingProduct && (
-                    <button type="button" onClick={() => setEditingProduct(null)} className="flex-1 bg-slate-100 border border-slate-200 text-slate-600 font-bold py-2 rounded text-xs">
+                    <button type="button" onClick={() => setEditingProduct(null)} className="flex-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-bold py-2 rounded text-xs transition-colors">
                       Cancel
                     </button>
                   )}
@@ -1127,20 +1271,26 @@ export default function App() {
               </form>
             </div>
             
-            <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[9px] tracking-wider border-b border-slate-100">
                   <tr><th className="p-3">Product</th><th className="p-3">Price & Weight</th><th className="p-3">Stock</th><th className="p-3">Action</th></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
                   {products.map(p => (
-                    <tr key={p.id}>
+                    <tr key={p.id} className="hover:bg-slate-50 transition-colors">
                       <td className="p-3 flex items-center gap-2">
                         <img src={p.image} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} className="w-8 h-8 rounded object-cover bg-slate-50 border border-slate-100" />
-                        <div><p className="font-bold text-slate-900">{p.name}</p><p className="text-[9px] font-bold uppercase text-slate-400">{p.category}</p></div>
+                        <div>
+                          <p className="font-bold text-slate-900 line-clamp-1">{p.name}</p>
+                          <p className="text-[9px] font-bold uppercase text-slate-400">{p.category}</p>
+                        </div>
                       </td>
                       <td className="p-3">
                         <span className="font-bold text-blue-600 block">RM {p.price.toFixed(2)}</span>
+                        {p.originalPrice && p.originalPrice > p.price && (
+                          <span className="text-[9px] text-slate-400 line-through block">RM {p.originalPrice.toFixed(2)}</span>
+                        )}
                         <span className="text-[10px] text-slate-500">{p.weight || 100}g</span>
                       </td>
                       <td className="p-3">
@@ -1150,8 +1300,8 @@ export default function App() {
                       </td>
                       <td className="p-3">
                         <div className="flex gap-1 w-16">
-                          <button onClick={() => setEditingProduct(p)} className="flex-1 bg-white border border-slate-200 text-slate-500 p-1 rounded"><Icons.Edit /></button>
-                          <button onClick={() => handleDeleteProduct(p.id)} className="flex-1 bg-red-50 border border-red-100 text-red-500 p-1 rounded"><Icons.Trash /></button>
+                          <button onClick={() => setEditingProduct(p)} className="flex-1 bg-white hover:bg-slate-100 border border-slate-200 text-slate-500 p-1 rounded transition-colors"><Icons.Edit /></button>
+                          <button onClick={() => handleDeleteProduct(p.id)} className="flex-1 bg-red-50 hover:bg-red-100 border border-red-100 text-red-500 p-1 rounded transition-colors"><Icons.Trash /></button>
                         </div>
                       </td>
                     </tr>
@@ -1170,10 +1320,10 @@ export default function App() {
       <div className="min-h-screen bg-slate-50 py-8 print:p-0 print:bg-white">
         <div className="max-w-2xl mx-auto">
           <div className="flex justify-between items-center mb-4 px-4 print:hidden">
-            <button onClick={() => navigateTo(user?.role === 'admin' ? 'admin_orders' : 'myorders')} className="flex items-center text-slate-500 font-bold gap-1 text-xs"><Icons.ArrowLeft /> Back</button>
-            <button onClick={() => window.print()} className="bg-slate-900 text-white px-4 py-1.5 rounded-md font-bold text-xs flex items-center gap-1"><Icons.Printer /> Print</button>
+            <button onClick={() => navigateTo(user?.role === 'admin' ? 'admin_orders' : 'myorders')} className="flex items-center text-slate-500 font-bold gap-1 text-xs hover:text-blue-600 transition-colors"><Icons.ArrowLeft /> Back</button>
+            <button onClick={() => window.print()} className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-1.5 rounded-md font-bold text-xs flex items-center gap-1 transition-colors"><Icons.Printer /> Print</button>
           </div>
-          <div className="bg-white p-6 sm:p-10 border border-slate-200 print:border-none mx-4">
+          <div className="bg-white p-6 sm:p-10 border border-slate-200 print:border-none mx-4 shadow-sm print:shadow-none">
             <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-6">
               <div>
                 <h1 className="text-2xl font-black tracking-tighter text-blue-600">3D<span className="text-slate-900">STORE</span></h1>
@@ -1228,6 +1378,7 @@ export default function App() {
         {view === 'product' && <ProductView />}
         {view === 'cart' && <CartView />}
         {view === 'checkout' && <CheckoutView />}
+        {view === 'profile' && <ProfileView />} 
         {view === 'success' && <SuccessView />}
         {view === 'myorders' && <MyOrdersView />}
         {view === 'custom_print' && <CustomPrintView />}
