@@ -338,8 +338,8 @@ export default function App() {
                     <p className="text-[10px] font-bold text-slate-400">{((item.weight || 100) * item.quantity)}g</p>
                   </div>
                   {item.notes && (
-                    <div className="mt-1.5 bg-slate-50 p-1.5 rounded text-[10px] text-slate-500 border border-slate-100">
-                      <span className="font-bold">Notes: </span>{item.notes}
+                    <div className="mt-1.5 bg-slate-50 p-1.5 rounded text-[10px] text-slate-500 border border-slate-100 whitespace-pre-wrap">
+                      <span className="font-bold block mb-0.5">Notes: </span>{item.notes}
                     </div>
                   )}
                 </div>
@@ -441,7 +441,7 @@ export default function App() {
         waText += `*Address:* ${orderData.address}\n*Region:* ${orderData.region}\n\n*Items:*\n`;
         cart.forEach(item => {
            waText += `- ${item.quantity}x ${item.name} (RM ${item.price.toFixed(2)})\n`;
-           if (item.notes) waText += `  _Notes: ${item.notes}_\n`;
+           if (item.notes) waText += `  _Notes:\n${item.notes}_\n`;
         });
         waText += `\n*Subtotal:* RM ${cartSubtotal.toFixed(2)}\n*Shipping:* RM ${shippingFee.toFixed(2)}\n*TOTAL:* RM ${grandTotal.toFixed(2)}`;
         
@@ -625,7 +625,7 @@ export default function App() {
 
   const AdminOrdersView = () => {
     const [editingDelivery, setEditingDelivery] = useState(null);
-    const [viewingOrder, setViewingOrder] = useState(null); // <-- STATE UNTUK MODAL DETAIL
+    const [viewingOrder, setViewingOrder] = useState(null); 
 
     const updateOrderStatus = async (docId, newStatus) => {
       await updateDoc(doc(db, "orders", docId), { status: newStatus });
@@ -768,7 +768,9 @@ export default function App() {
                           </div>
                           {item.notes ? (
                             <div className="bg-amber-50 border border-amber-200 p-2.5 rounded text-xs text-amber-900">
-                              <span className="font-black uppercase tracking-wider block mb-0.5">💬 Nota Pelanggan:</span> {item.notes}
+                              <span className="font-black uppercase tracking-wider block mb-1">💬 Nota Pelanggan:</span> 
+                              {/* KELAS AJAIB (whitespace-pre-wrap) ADA DI SINI */}
+                              <div className="whitespace-pre-wrap font-medium">{item.notes}</div>
                             </div>
                           ) : (
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Tiada nota tambahan</p>
