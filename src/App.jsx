@@ -5,18 +5,16 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import ReCAPTCHA from "react-google-recaptcha"; // <-- IMPORT RECAPTCHA
+import ReCAPTCHA from "react-google-recaptcha"; 
 
 // ----------------------------------------------------
-// MAIN SETTINGS 
+// MAIN SETTINGS (SEMUA INFO ANDA TELAH LENGKAP!)
 // ----------------------------------------------------
 const WHATSAPP_NUMBER = "60194155722"; 
 const ADMIN_EMAILS = ['juscinta89@gmail.com']; 
 const QR_PAYMENT_URL = "https://i.postimg.cc/wjk126Zs/qr-code.png"; 
 const TELEGRAM_BOT_TOKEN = "8636588086:AAHTfHyVL5xCjBMG3R17oAaaeIzgwmodSEw"; 
-const TELEGRAM_CHAT_ID = "-5504733427";
-
-// Kunci reCAPTCHA (Ini kunci Test Google. Sila tukar ke kunci sebenar anda nanti)
+const TELEGRAM_CHAT_ID = "-5504733427"; 
 const RECAPTCHA_SITE_KEY = "6LeVT40tAAAAANBT0pA5gUniT2dyuhWk5c0J07-9"; 
 
 const Icons = {
@@ -374,7 +372,7 @@ export default function App() {
   const CheckoutView = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [region, setRegion] = useState('');
-    const [captchaValue, setCaptchaValue] = useState(null); // <-- STATE UNTUK RECAPTCHA
+    const [captchaValue, setCaptchaValue] = useState(null); 
 
     let shippingFee = 0;
     if (cartTotalWeight > 0 && region !== '') {
@@ -391,7 +389,6 @@ export default function App() {
     const handleCheckoutSubmit = async (e) => {
       e.preventDefault();
       
-      // PENGESAHAN RECAPTCHA SEBELUM ORDER
       if (!captchaValue) { 
         alert("Sila tandakan kotak 'I'm not a robot' (reCAPTCHA) terlebih dahulu untuk meneruskan."); 
         return; 
