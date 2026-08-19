@@ -38,7 +38,11 @@ const Icons = {
   Truck: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>,
   Box: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>,
   TrendingUp: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>,
-  ClipboardList: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></svg>
+  ClipboardList: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></svg>,
+  Search: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>,
+  FileUp: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><polyline points="9 15 12 12 15 15"></polyline></svg>,
+  ShieldCheck: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>,
+  MessageSquare: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
 };
 
 const MOCK_CATEGORIES = ['3D PRINT', 'ROBOT PARTS', 'ELECTRONICS', 'STEM / EDUCATION', 'CUSTOM 3D PRINT'];
@@ -49,6 +53,7 @@ export default function App() {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [customRequests, setCustomRequests] = useState([]); // State untuk Custom Quotes
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null); 
   const [completedOrder, setCompletedOrder] = useState(null);
@@ -69,6 +74,7 @@ export default function App() {
     return () => unsubscribe();
   }, [view]);
 
+  // Fetch Products
   useEffect(() => {
     const q = query(collection(db, "products"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -78,15 +84,21 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // Fetch Orders & Custom Requests
   useEffect(() => {
     if (user) {
-      let q;
+      let qOrders;
       if (user.role === 'admin') {
-        q = query(collection(db, "orders"), orderBy("date", "desc"));
+        qOrders = query(collection(db, "orders"), orderBy("date", "desc"));
+        // Khas untuk Admin: Tarik data Custom Request
+        const qRequests = query(collection(db, "custom_requests"), orderBy("date", "desc"));
+        onSnapshot(qRequests, (snapshot) => {
+          setCustomRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
       } else {
-        q = query(collection(db, "orders"), where("email", "==", user.email));
+        qOrders = query(collection(db, "orders"), where("email", "==", user.email));
       }
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const unsubscribe = onSnapshot(qOrders, (querySnapshot) => {
         let ordersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         if (user.role !== 'admin') {
           ordersData.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -96,6 +108,7 @@ export default function App() {
       return () => unsubscribe();
     } else {
       setOrders([]);
+      setCustomRequests([]);
     }
   }, [user]);
 
@@ -166,19 +179,38 @@ export default function App() {
         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-2">Main Menu</p>
           <button onClick={() => navigateTo('home')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'home' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Store /> Store</button>
+          
+          {/* MENU BAHARU: CUSTOM PRINT */}
+          <button onClick={() => navigateTo('custom_print')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'custom_print' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
+            <Icons.FileUp /> Custom 3D Print
+          </button>
+
           <button onClick={() => navigateTo('cart')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium relative ${view === 'cart' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
             <Icons.Cart /> Cart
             {cart.length > 0 && <span className={`absolute right-4 text-xs font-bold px-2 py-0.5 rounded-full ${view === 'cart' ? 'bg-white text-blue-600' : 'bg-blue-500 text-white'}`}>{cart.length}</span>}
           </button>
+          
           {user && user.role !== 'admin' && (
             <button onClick={() => navigateTo('myorders')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'myorders' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Orders /> My Orders</button>
           )}
+
+          {/* MENU BAHARU: POLICIES */}
+          <button onClick={() => navigateTo('policies')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'policies' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
+            <Icons.ShieldCheck /> Policies & FAQ
+          </button>
 
           {user?.role === 'admin' && (
             <>
               <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-6">Administration</p>
               <button onClick={() => navigateTo('admin_dashboard')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_dashboard' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.TrendingUp /> Dashboard</button>
               <button onClick={() => navigateTo('admin_orders')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_orders' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.ClipboardList /> Manage Orders</button>
+              
+              {/* MENU BAHARU: MANAGE QUOTES */}
+              <button onClick={() => navigateTo('admin_quotes')} className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg font-medium ${view === 'admin_quotes' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
+                <div className="flex items-center gap-3"><Icons.MessageSquare /> Manage Quotes</div>
+                {customRequests.filter(r=>r.status==='NEW').length > 0 && <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{customRequests.filter(r=>r.status==='NEW').length}</span>}
+              </button>
+
               <button onClick={() => navigateTo('admin_products')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_products' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Box /> Manage Products</button>
             </>
           )}
@@ -215,54 +247,82 @@ export default function App() {
     </div>
   );
 
-  const HomeView = () => (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <div className="bg-slate-900 text-white overflow-hidden relative rounded-2xl border border-slate-800 shadow-md h-64 md:h-80 flex items-center justify-center">
-        <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-500 via-slate-900 to-slate-900"></div>
-        <div className="absolute right-[-10%] top-[-20%] w-[350px] md:w-[500px] opacity-15 pointer-events-none mix-blend-screen">
-          <img src={LOGO_URL} alt="Watermark" className="w-full h-full object-contain filter grayscale" onError={(e) => e.target.style.display='none'} />
-        </div>
-        <div className="absolute left-[-10%] bottom-[-20%] w-[250px] md:w-[350px] opacity-10 pointer-events-none mix-blend-screen">
-          <img src={LOGO_URL} alt="Watermark" className="w-full h-full object-contain filter grayscale" onError={(e) => e.target.style.display='none'} />
-        </div>
-        <div className="max-w-3xl px-6 relative z-10 text-center mx-auto">
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-4 drop-shadow-lg">PRINT • BUILD <br/><span className="text-blue-500">INNOVATE</span></h1>
-          <p className="text-slate-300 max-w-xl mx-auto text-xs md:text-sm drop-shadow-md">Premium 3D printing services and robotics components for makers, schools, and STEM projects.</p>
-        </div>
-      </div>
+  const HomeView = () => {
+    // STATE UNTUK CARIAN PRODUK
+    const [searchTerm, setSearchTerm] = useState('');
 
-      <div className="py-6 mt-2">
-        <h2 className="text-lg font-black mb-4 text-slate-900">All Products</h2>
-        {products.length === 0 ? (
-          <div className="p-8 bg-white border border-slate-200 rounded-xl text-slate-500 text-center">No products available at the moment.</div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {products.map(product => (
-              <div key={product.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                <div className="relative aspect-square overflow-hidden bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100">
-                  <img src={product.image || 'https://placehold.co/400x400?text=No+Image'} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={product.name} className="w-full h-full object-contain" />
-                  <div className="absolute top-2 left-2 bg-white/90 backdrop-blur text-[9px] font-bold px-2 py-1 rounded text-slate-700 uppercase tracking-wide border border-slate-200">{product.category}</div>
-                </div>
-                <div className="p-4 flex-grow flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-bold text-slate-900 mb-1 leading-tight text-sm">{product.name}</h3>
-                    <p className="text-xs text-slate-500 mb-3 line-clamp-2">{product.description}</p>
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="text-base font-black text-blue-600">RM {product.price.toFixed(2)}</span>
-                      <span className={`text-[9px] font-bold px-2 py-1 rounded uppercase tracking-wide ${product.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>{product.stock > 0 ? `Stock: ${product.stock}` : 'Sold Out'}</span>
-                    </div>
-                    <button onClick={() => navigateTo('product', product)} className="w-full py-2 bg-slate-900 text-white rounded-md font-bold text-xs flex justify-center items-center gap-2">View Details</button>
-                  </div>
-                </div>
-              </div>
-            ))}
+    const filteredProducts = products.filter(product => 
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      product.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return (
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="bg-slate-900 text-white overflow-hidden relative rounded-2xl border border-slate-800 shadow-md h-64 md:h-80 flex items-center justify-center">
+          <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-500 via-slate-900 to-slate-900"></div>
+          <div className="absolute right-[-10%] top-[-20%] w-[350px] md:w-[500px] opacity-15 pointer-events-none mix-blend-screen">
+            <img src={LOGO_URL} alt="Watermark" className="w-full h-full object-contain filter grayscale" onError={(e) => e.target.style.display='none'} />
           </div>
-        )}
+          <div className="absolute left-[-10%] bottom-[-20%] w-[250px] md:w-[350px] opacity-10 pointer-events-none mix-blend-screen">
+            <img src={LOGO_URL} alt="Watermark" className="w-full h-full object-contain filter grayscale" onError={(e) => e.target.style.display='none'} />
+          </div>
+          <div className="max-w-3xl px-6 relative z-10 text-center mx-auto">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-4 drop-shadow-lg">PRINT • BUILD <br/><span className="text-blue-500">INNOVATE</span></h1>
+            <p className="text-slate-300 max-w-xl mx-auto text-xs md:text-sm drop-shadow-md">Premium 3D printing services and robotics components for makers, schools, and STEM projects.</p>
+          </div>
+        </div>
+
+        <div className="py-6 mt-2">
+          {/* BAHAGIAN CARIAN (SEARCH BAR) */}
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <h2 className="text-lg font-black text-slate-900 w-full md:w-auto">All Products</h2>
+            <div className="relative w-full md:w-72">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <Icons.Search />
+              </div>
+              <input 
+                type="text" 
+                placeholder="Search parts, 3D prints..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2.5 w-full border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all bg-white"
+              />
+            </div>
+          </div>
+
+          {filteredProducts.length === 0 ? (
+            <div className="p-8 bg-white border border-slate-200 rounded-xl text-slate-500 text-center">
+              {searchTerm ? `Tiada produk dijumpai untuk carian "${searchTerm}".` : 'No products available at the moment.'}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredProducts.map(product => (
+                <div key={product.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                  <div className="relative aspect-square overflow-hidden bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100">
+                    <img src={product.image || 'https://placehold.co/400x400?text=No+Image'} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={product.name} className="w-full h-full object-contain" />
+                    <div className="absolute top-2 left-2 bg-white/90 backdrop-blur text-[9px] font-bold px-2 py-1 rounded text-slate-700 uppercase tracking-wide border border-slate-200">{product.category}</div>
+                  </div>
+                  <div className="p-4 flex-grow flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-bold text-slate-900 mb-1 leading-tight text-sm">{product.name}</h3>
+                      <p className="text-xs text-slate-500 mb-3 line-clamp-2">{product.description}</p>
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-base font-black text-blue-600">RM {product.price.toFixed(2)}</span>
+                        <span className={`text-[9px] font-bold px-2 py-1 rounded uppercase tracking-wide ${product.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>{product.stock > 0 ? `Stock: ${product.stock}` : 'Sold Out'}</span>
+                      </div>
+                      <button onClick={() => navigateTo('product', product)} className="w-full py-2 bg-slate-900 text-white rounded-md font-bold text-xs flex justify-center items-center gap-2">View Details</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const ProductView = () => {
     const [qty, setQty] = useState(1);
@@ -304,7 +364,7 @@ export default function App() {
               
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Notes</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows="2" className="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none" placeholder="e.g. List of names..."></textarea>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows="2" className="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none" placeholder="e.g. Senarai nama untuk nametag..."></textarea>
               </div>
 
               <button onClick={() => { addToCart(selectedProduct, qty, notes); navigateTo('cart'); }} disabled={selectedProduct.stock <= 0} className={`w-full py-3.5 rounded-lg font-bold text-sm uppercase tracking-wide flex justify-center items-center gap-2 ${selectedProduct.stock > 0 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}>
@@ -513,6 +573,141 @@ export default function App() {
     );
   };
 
+  // ==========================================
+  // VIEW BAHARU: CUSTOM 3D PRINT REQUEST
+  // ==========================================
+  const CustomPrintView = () => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [captchaValue, setCaptchaValue] = useState(null);
+
+    const handleCustomSubmit = async (e) => {
+      e.preventDefault();
+      if (!captchaValue) {
+        alert("Sila tandakan kotak reCAPTCHA.");
+        return;
+      }
+
+      setIsSubmitting(true);
+      const formData = new FormData(e.target);
+      const requestId = `QTE-${Date.now().toString().slice(-6)}`;
+      const file = formData.get('file');
+      let fileUrl = '';
+
+      try {
+        if (file && file.size > 0) {
+          const storageRef = ref(storage, `custom_quotes/${requestId}-${file.name}`);
+          await uploadBytes(storageRef, file);
+          fileUrl = await getDownloadURL(storageRef);
+        }
+
+        const requestData = {
+          requestId,
+          date: new Date().toISOString(),
+          customerName: formData.get('name'),
+          phone: formData.get('phone'),
+          email: formData.get('email'),
+          description: formData.get('description'),
+          fileUrl,
+          status: 'NEW'
+        };
+
+        // Simpan dalam koleksi baharu 'custom_requests'
+        await addDoc(collection(db, "custom_requests"), requestData);
+
+        // Hantar Telegram Note
+        if (TELEGRAM_BOT_TOKEN !== "LETAK_TOKEN_BOT_DI_SINI") {
+          const telegramMessage = `🛠️ *TEMPAHAN CUSTOM 3D BARU!*\n\n*ID:* \`${requestId}\`\n*Nama:* ${requestData.customerName}\n*No HP:* ${requestData.phone}\n*Detail:* ${requestData.description}`;
+          try {
+            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramMessage, parse_mode: 'Markdown' })
+            });
+          } catch (err) {}
+        }
+
+        alert("Permintaan Custom 3D Print berjaya dihantar! Kami akan hubungi anda tidak lama lagi melalui WhatsApp.");
+        navigateTo('home');
+      } catch (error) {
+        alert("Ralat menghantar borang: " + error.message);
+      }
+      setIsSubmitting(false);
+    };
+
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
+        <h1 className="text-2xl font-black mb-2 text-slate-900">Custom 3D Print Request</h1>
+        <p className="text-sm text-slate-500 mb-6">Ada fail STL sendiri atau idea rekaan khas? Muat naik di sini dan kami akan berikan sebut harga (quotation) percuma!</p>
+        
+        <form onSubmit={handleCustomSubmit} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div><label className="block text-xs font-bold text-slate-700 mb-1">Nama Penuh *</label><input required name="name" className="w-full border border-slate-200 rounded p-2.5 outline-none" /></div>
+            <div><label className="block text-xs font-bold text-slate-700 mb-1">No. Telefon *</label><input required name="phone" className="w-full border border-slate-200 rounded p-2.5 outline-none" /></div>
+          </div>
+          <div><label className="block text-xs font-bold text-slate-700 mb-1">Email (Pilihan)</label><input type="email" name="email" className="w-full border border-slate-200 rounded p-2.5 outline-none" /></div>
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Keterangan / Detail Rekaan *</label>
+            <textarea required name="description" rows="4" placeholder="Cth: Saya nak print kotak untuk Arduino, warna hitam, material PETG..." className="w-full border border-slate-200 rounded p-2.5 outline-none"></textarea>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Muat Naik Fail (STL / OBJ / Gambar)</label>
+            <input type="file" name="file" accept=".stl,.obj,.png,.jpg,.jpeg,.pdf,.zip" className="w-full border border-slate-200 rounded p-2 text-sm bg-slate-50" />
+            <p className="text-[10px] text-slate-400 mt-1">Saiz maksimum: 10MB</p>
+          </div>
+
+          <div className="py-2">
+             <ReCAPTCHA sitekey={RECAPTCHA_SITE_KEY} onChange={(value) => setCaptchaValue(value)} />
+          </div>
+
+          <button disabled={isSubmitting || !captchaValue} type="submit" className={`w-full py-3.5 rounded-lg font-bold text-sm text-white transition-colors ${!captchaValue ? 'bg-slate-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
+            {isSubmitting ? 'Menghantar...' : 'Hantar Permintaan (Request Quote)'}
+          </button>
+        </form>
+      </div>
+    );
+  };
+
+  // ==========================================
+  // VIEW BAHARU: POLICIES & FAQ
+  // ==========================================
+  const PoliciesView = () => (
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <h1 className="text-2xl font-black text-slate-900 mb-4">Policies & FAQ</h1>
+      
+      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><Icons.Truck /> Polisi Penghantaran (Shipping)</h2>
+        <ul className="list-disc pl-5 space-y-2 text-sm text-slate-600">
+          <li>Semua pesanan sedia ada (Ready Stock) akan diproses dan dipos dalam masa <strong>1-3 hari bekerja</strong>.</li>
+          <li>Untuk pesanan <em>Custom 3D Print</em>, masa memproses bergantung kepada saiz dan kuantiti cetakan (biasanya 3-7 hari).</li>
+          <li>Kami menggunakan kurier utama seperti J&T, PosLaju, dan NinjaVan.</li>
+        </ul>
+      </div>
+
+      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><Icons.ShieldCheck /> Polisi Pemulangan (Returns & Refunds)</h2>
+        <ul className="list-disc pl-5 space-y-2 text-sm text-slate-600">
+          <li>Barang yang rosak semasa penghantaran boleh dituntut untuk pertukaran dalam tempoh <strong>3 hari</strong> selepas bungkusan diterima.</li>
+          <li>Sila ambil video <em>unboxing</em> sebagai bukti bagi sebarang tuntutan.</li>
+          <li>Wang tidak boleh dikembalikan untuk barang Custom Print sekiranya kesalahan berpunca daripada fail STL yang diberikan oleh pelanggan.</li>
+        </ul>
+      </div>
+
+      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><Icons.MessageSquare /> Soalan Lazim (FAQ)</h2>
+        <div className="space-y-4 text-sm text-slate-600">
+          <div>
+            <p className="font-bold text-slate-800">Q: Material apa yang digunakan untuk 3D Print?</p>
+            <p>A: Secara asasnya kami menggunakan PLA+ dan PETG yang tahan lasak. Untuk material khas seperti TPU atau ABS, sila hubungi kami melalui borang Custom Print.</p>
+          </div>
+          <div>
+            <p className="font-bold text-slate-800">Q: Adakah kedai fizikal (Walk-in) disediakan?</p>
+            <p>A: Buat masa ini kami beroperasi 100% secara dalam talian. Pengambilan sendiri (Self-pickup) hanya dibenarkan jika ada perjanjian awal.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const SuccessView = () => (
     <div className="max-w-md mx-auto px-4 py-20 text-center">
       <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.CheckCircle /></div>
@@ -682,7 +877,6 @@ export default function App() {
                           ))}
                         </ul>
                         <p className="font-black text-blue-600 text-xs">RM {order.total.toFixed(2)}</p>
-                        {/* BUTANG UNTUK BUKA MODAL */}
                         <button onClick={() => setViewingOrder(order)} className="mt-2 text-[9px] font-bold bg-blue-50 text-blue-600 border border-blue-100 px-2 py-1 rounded w-full hover:bg-blue-100">
                           Lihat Detail & Nota
                         </button>
@@ -730,9 +924,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* ======================================= */}
-          {/* MODAL POP-UP UNTUK DETAIL & NOTA ORDER  */}
-          {/* ======================================= */}
+          {/* MODAL POP-UP UNTUK DETAIL & NOTA ORDER */}
           {viewingOrder && (
             <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
               <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
@@ -769,7 +961,6 @@ export default function App() {
                           {item.notes ? (
                             <div className="bg-amber-50 border border-amber-200 p-2.5 rounded text-xs text-amber-900">
                               <span className="font-black uppercase tracking-wider block mb-1">💬 Nota Pelanggan:</span> 
-                              {/* KELAS AJAIB (whitespace-pre-wrap) ADA DI SINI */}
                               <div className="whitespace-pre-wrap font-medium">{item.notes}</div>
                             </div>
                           ) : (
@@ -791,6 +982,68 @@ export default function App() {
               </div>
             </div>
           )}
+      </div>
+    );
+  };
+
+  // ==========================================
+  // VIEW BAHARU: ADMIN QUOTES (CUSTOM REQUESTS)
+  // ==========================================
+  const AdminQuotesView = () => {
+    const updateQuoteStatus = async (id, status) => {
+      await updateDoc(doc(db, "custom_requests", id), { status });
+    };
+
+    const deleteQuote = async (id) => {
+      if (window.confirm("Padam permintaan ini?")) await deleteDoc(doc(db, "custom_requests", id));
+    };
+
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <h1 className="text-xl font-black text-slate-900 mb-5">Manage Custom Quotes</h1>
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[9px] tracking-wider border-b border-slate-100">
+                <tr><th className="p-3">ID & Tarikh</th><th className="p-3">Pelanggan</th><th className="p-3 w-1/3">Keterangan</th><th className="p-3">Fail</th><th className="p-3">Tindakan</th></tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {customRequests.length === 0 && <tr><td colSpan="5" className="p-5 text-center text-slate-500">Tiada permintaan baharu.</td></tr>}
+                {customRequests.map((req) => (
+                  <tr key={req.id}>
+                    <td className="p-3 align-top">
+                      <span className="font-bold text-blue-600 block mb-0.5">{req.requestId}</span>
+                      <span className="text-[10px] text-slate-400">{new Date(req.date).toLocaleDateString('en-GB')}</span>
+                    </td>
+                    <td className="p-3 align-top">
+                      <p className="font-bold text-slate-900">{req.customerName}</p>
+                      <p className="text-[10px] text-slate-500">{req.phone}</p>
+                    </td>
+                    <td className="p-3 align-top whitespace-pre-wrap">
+                      <div className="max-h-24 overflow-y-auto pr-2 text-slate-700 bg-slate-50 p-2 rounded border border-slate-100">
+                        {req.description}
+                      </div>
+                    </td>
+                    <td className="p-3 align-top">
+                      {req.fileUrl ? (
+                         <a href={req.fileUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center gap-1 w-fit"><Icons.FileUp /> Buka Fail</a>
+                      ) : <span className="text-[9px] text-slate-400 italic">Tiada Fail</span>}
+                    </td>
+                    <td className="p-3 align-top">
+                      <select value={req.status} onChange={(e) => updateQuoteStatus(req.id, e.target.value)} className={`w-28 mb-1.5 border rounded p-1.5 text-[10px] font-bold outline-none cursor-pointer ${req.status === 'NEW' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-slate-50 border-slate-200'}`}>
+                        <option value="NEW">NEW (Baru)</option>
+                        <option value="CONTACTED">DIHUBUNGI</option>
+                        <option value="CLOSED">SELESAI</option>
+                      </select>
+                      <br/>
+                      <button onClick={() => deleteQuote(req.id)} className="text-[10px] text-red-500 font-bold hover:underline">Padam</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     );
   };
@@ -993,8 +1246,11 @@ export default function App() {
         {view === 'checkout' && <CheckoutView />}
         {view === 'success' && <SuccessView />}
         {view === 'myorders' && <MyOrdersView />}
+        {view === 'custom_print' && <CustomPrintView />}
+        {view === 'policies' && <PoliciesView />}
         {view === 'admin_dashboard' && <AdminDashboardView />}
         {view === 'admin_orders' && <AdminOrdersView />}
+        {view === 'admin_quotes' && <AdminQuotesView />}
         {view === 'admin_products' && <AdminProductsView />}
         {view === 'receipt' && <ReceiptView />}
       </main>
