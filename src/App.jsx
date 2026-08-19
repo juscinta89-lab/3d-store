@@ -6,7 +6,6 @@ import {
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import ReCAPTCHA from "react-google-recaptcha"; 
-// IMPORT BAHARU UNTUK GRAF / CARTA
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // ----------------------------------------------------
@@ -47,7 +46,8 @@ const Icons = {
   MessageSquare: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>,
   User: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>,
   ChevronDown: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>,
-  AlertCircle: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+  AlertCircle: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>,
+  Copy: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
 };
 
 const MOCK_CATEGORIES = ['3D PRINT', 'ROBOT PARTS', 'ELECTRONICS', 'STEM / EDUCATION', 'CUSTOM 3D PRINT'];
@@ -152,6 +152,23 @@ export default function App() {
     catch (error) { console.error("Login failed:", error); }
   };
   const handleLogout = () => { signOut(auth); };
+
+  // ==========================================
+  // FLOATING WHATSAPP BUTTON COMPONENT
+  // ==========================================
+  const FloatingWhatsApp = () => (
+    <a 
+      href={`https://wa.me/${WHATSAPP_NUMBER}`} 
+      target="_blank" 
+      rel="noopener noreferrer" 
+      className="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-2xl hover:bg-green-600 hover:scale-110 transition-all z-50 flex items-center justify-center group"
+    >
+      <Icons.WhatsApp />
+      <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap pl-0 group-hover:pl-2 font-bold text-sm">
+        Sembang dengan Kami
+      </span>
+    </a>
+  );
 
   const Sidebar = () => (
     <>
@@ -838,8 +855,41 @@ export default function App() {
     </div>
   );
 
+  // ==========================================
+  // VIEW PELANGGAN: MY ORDERS (DENGAN VISUAL TIMELINE)
+  // ==========================================
   const MyOrdersView = () => {
     if (!user || user.role === 'admin') return null;
+
+    // KOMPONEN TIMELINE
+    const OrderTimeline = ({ status }) => {
+      const steps = ['PENDING', 'PROCESSING', 'POSTED', 'COMPLETED'];
+      const labels = ['Dibayar', 'Diproses', 'Dipos', 'Selesai'];
+      const currentIndex = steps.indexOf(status);
+
+      return (
+        <div className="w-full pt-4 pb-6 mt-2 mb-2 border-t border-b border-slate-100">
+          <div className="flex justify-between items-center relative px-2">
+            {/* Garisan Belakang (Kelabu) */}
+            <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-1 bg-slate-200 z-0 rounded-full"></div>
+            {/* Garisan Aktif (Biru) */}
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 h-1 bg-blue-500 z-0 transition-all duration-500 rounded-full" style={{ width: `calc(${(currentIndex / 3) * 100}% - 32px)` }}></div>
+            
+            {steps.map((step, idx) => {
+              const isActive = idx <= currentIndex;
+              return (
+                <div key={step} className="relative z-10 flex flex-col items-center gap-2">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 text-[10px] font-bold transition-colors ${isActive ? 'bg-blue-500 border-blue-500 text-white shadow-md' : 'bg-white border-slate-300 text-slate-400'}`}>
+                    {isActive ? '✓' : idx + 1}
+                  </div>
+                  <span className={`absolute top-8 text-[9px] font-bold whitespace-nowrap ${isActive ? 'text-blue-600' : 'text-slate-400'}`}>{labels[idx]}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    };
 
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
@@ -847,22 +897,25 @@ export default function App() {
         {orders.length === 0 ? (
           <div className="bg-white p-10 rounded-xl border border-slate-200 text-center"><p className="text-slate-500 text-sm">No orders found.</p></div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {orders.map(order => (
               <div key={order.id} className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-sm">
-                <div className="flex flex-col sm:flex-row justify-between sm:items-center border-b border-slate-100 pb-3 mb-3 gap-3">
+                <div className="flex justify-between items-center pb-2 mb-2 gap-3">
                   <div>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Order ID</p>
                     <p className="font-black text-blue-600 text-sm">{order.orderId}</p>
                     <p className="text-[10px] text-slate-400">{new Date(order.date).toLocaleString('en-GB')}</p>
                   </div>
                   <div className="flex flex-col sm:items-end gap-2">
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${order.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : order.status === 'POSTED' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>{order.status}</span>
                     <button onClick={() => navigateTo('receipt', order)} className="text-[10px] font-bold text-slate-500 flex items-center gap-1 hover:text-blue-600"><Icons.Printer /> Print Receipt</button>
                   </div>
                 </div>
+
+                {/* VISUAL TIMELINE DIMASUKKAN DI SINI */}
+                <OrderTimeline status={order.status} />
                 
-                <div className="mb-3">
+                <div className="mb-3 mt-4">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Senarai Barang</p>
                   {order.items?.map((item, idx) => (
                     <div key={idx} className="flex gap-2 text-xs text-slate-700 mb-1">
                       <span className="font-black text-blue-600 w-5">{item.quantity}x</span>
@@ -871,23 +924,23 @@ export default function App() {
                   ))}
                 </div>
 
-                <div className="bg-slate-50 p-3 rounded-lg flex flex-col md:flex-row justify-between items-center gap-3 border border-slate-100">
+                <div className="bg-slate-50 p-3 rounded-lg flex flex-col md:flex-row justify-between items-center gap-3 border border-slate-100 mt-4">
                   <div>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Delivery Status</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Maklumat Penghantaran</p>
                     {order.trackingNumber ? (
                       <div className="flex items-center gap-1.5 text-xs">
                         <Icons.Truck />
-                        <span className="font-bold text-slate-900">Tracking: {order.trackingNumber}</span>
+                        <span className="font-bold text-slate-900">Tracking: <span className="text-blue-600">{order.trackingNumber}</span></span>
                         {order.deliveryProofUrl && (
-                          <a href={order.deliveryProofUrl} target="_blank" rel="noopener noreferrer" className="ml-1 text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">View Proof</a>
+                          <a href={order.deliveryProofUrl} target="_blank" rel="noopener noreferrer" className="ml-1 text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold hover:bg-blue-200">Lihat Bukti</a>
                         )}
                       </div>
                     ) : (
-                      <p className="text-[10px] font-medium text-slate-500 italic">Processing...</p>
+                      <p className="text-[10px] font-medium text-slate-500 italic">Pesanan sedang diuruskan...</p>
                     )}
                   </div>
                   <div className="text-right w-full md:w-auto">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Total</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Total Bayaran</p>
                     <p className="text-base font-black text-slate-900">RM {order.total.toFixed(2)}</p>
                   </div>
                 </div>
@@ -900,18 +953,13 @@ export default function App() {
     );
   };
 
-  // ==========================================
-  // VIEW BAHARU: ADMIN DASHBOARD (INTERAKTIF)
-  // ==========================================
   const AdminDashboardView = () => {
-    // KIRAAN ASAS
     const today = new Date();
     const dailySales = orders.filter(o => new Date(o.date).toDateString() === today.toDateString()).reduce((sum, o) => sum + o.total, 0);
     const monthlySales = orders.filter(o => { const d = new Date(o.date); return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear(); }).reduce((sum, o) => sum + o.total, 0);
     const yearlySales = orders.filter(o => new Date(o.date).getFullYear() === today.getFullYear()).reduce((sum, o) => sum + o.total, 0);
     const pendingCount = orders.filter(o => o.status === 'PENDING').length;
 
-    // DATA CARTA: 7 HARI TERAKHIR
     const last7Days = [...Array(7)].map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - i);
@@ -924,10 +972,8 @@ export default function App() {
       return { name: dateStr, Jualan: dailyTotal };
     });
 
-    // DATA PRODUK: STOK RENDAH
     const lowStockProducts = products.filter(p => p.stock <= 5).sort((a,b) => a.stock - b.stock);
 
-    // DATA PRODUK: TOP 5 PALING LARIS
     const productSales = {};
     orders.forEach(order => {
       order.items?.forEach(item => {
@@ -941,7 +987,6 @@ export default function App() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         <h1 className="text-2xl font-black text-slate-900">Dashboard Overview</h1>
         
-        {/* KAD KPI */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-10 text-blue-600"><Icons.TrendingUp /></div>
@@ -966,10 +1011,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* GRAF DAN INFO TAMBAHAN */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* CARTA JUALAN */}
           <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <h2 className="text-sm font-bold text-slate-800 mb-6 flex items-center gap-2"><Icons.TrendingUp /> Jualan 7 Hari Terakhir</h2>
             <div className="h-72 w-full text-xs font-medium">
@@ -978,19 +1020,14 @@ export default function App() {
                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b'}} dy={10} />
                    <YAxis axisLine={false} tickLine={false} tickFormatter={(value) => `RM${value}`} tick={{fill: '#64748b'}} dx={-10} />
-                   <Tooltip 
-                     cursor={{fill: '#f8fafc'}} 
-                     contentStyle={{borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontWeight: 'bold'}} 
-                   />
+                   <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontWeight: 'bold'}} />
                    <Bar dataKey="Jualan" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={40} />
                  </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* INFO STOK DAN TOP PRODUK */}
           <div className="space-y-6">
-             {/* AMARAN STOK RENDAH */}
              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                <h2 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2 text-red-600"><Icons.AlertCircle /> Amaran Stok Rendah</h2>
                <div className="space-y-3">
@@ -1004,7 +1041,6 @@ export default function App() {
                </div>
              </div>
 
-             {/* TOP 5 PRODUK */}
              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                 <h2 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2 text-blue-600"><Icons.Box /> Top 5 Paling Laris</h2>
                 <div className="space-y-2 text-xs">
@@ -1018,7 +1054,6 @@ export default function App() {
                 </div>
              </div>
           </div>
-
         </div>
       </div>
     );
@@ -1031,6 +1066,13 @@ export default function App() {
 
     const updateOrderStatus = async (docId, newStatus) => {
       await updateDoc(doc(db, "orders", docId), { status: newStatus });
+    };
+
+    // FUNGSI COPY MAKLUMAT POS
+    const handleCopyDetails = (order) => {
+      const text = `NAMA: ${order.customerName}\nTEL: ${order.phone}\nALAMAT:\n${order.address}\n\nPOSKOD & NEGERI: ${order.region}`;
+      navigator.clipboard.writeText(text);
+      alert("Maklumat pelanggan berjaya disalin!");
     };
 
     const handleDeliverySubmit = async (e, orderId) => {
@@ -1128,6 +1170,11 @@ export default function App() {
                           <p className="font-bold text-slate-900">{order.customerName}</p>
                           <p className="text-[10px] text-slate-500">{order.phone}</p>
                           <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{order.region}</p>
+                          
+                          {/* BUTANG COPY MAKLUMAT DIMASUKKAN DI SINI */}
+                          <button onClick={() => handleCopyDetails(order)} className="mt-2 text-[9px] bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-2 py-1 rounded flex items-center gap-1 transition-colors w-max font-bold">
+                            <Icons.Copy /> Salin Maklumat Pos
+                          </button>
                         </td>
                         <td className="p-3 align-top">
                           <ul className="space-y-0.5 mb-1.5">
@@ -1505,7 +1552,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col md:flex-row">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col md:flex-row relative">
       {view !== 'receipt' && <Sidebar />}
       <main className={`flex-1 min-h-screen ${view !== 'receipt' ? 'md:ml-64 pb-24' : ''}`}>
         {view !== 'receipt' && <TopHeader />}
@@ -1524,6 +1571,9 @@ export default function App() {
         {view === 'admin_products' && <AdminProductsView />}
         {view === 'receipt' && <ReceiptView />}
       </main>
+
+      {/* BUTANG WHATSAPP TERAPUNG DI SINI */}
+      {view !== 'receipt' && <FloatingWhatsApp />}
     </div>
   );
 }
