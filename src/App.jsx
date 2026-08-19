@@ -243,7 +243,6 @@ export default function App() {
         </div>
         
         <div className="flex items-center gap-4">
-           {/* DROPDOWN MENU PROFIL */}
            {user && (
              <div className="relative hidden md:block">
                <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="text-sm font-bold text-slate-600 hover:text-blue-600 flex items-center gap-1.5 transition-colors">
@@ -321,7 +320,6 @@ export default function App() {
                     <img src={product.image || 'https://placehold.co/400x400?text=No+Image'} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={product.name} className="w-full h-full object-contain hover:scale-105 transition-transform duration-300" />
                     <div className="absolute top-2 left-2 bg-white/90 backdrop-blur text-[9px] font-bold px-2 py-1 rounded text-slate-700 uppercase tracking-wide border border-slate-200">{product.category}</div>
                     
-                    {/* Lencana Diskaun jika ada harga potong */}
                     {product.originalPrice && product.originalPrice > product.price && (
                       <div className="absolute top-2 right-2 bg-red-600 text-white text-[9px] font-black px-2 py-1 rounded uppercase tracking-widest shadow-sm">- SALE</div>
                     )}
@@ -335,7 +333,6 @@ export default function App() {
                     <div>
                       <div className="flex justify-between items-center mb-4">
                         <div className="flex flex-col">
-                          {/* PAPARAN HARGA DISKAUN / POTONG */}
                           {product.originalPrice && product.originalPrice > product.price ? (
                             <>
                               <span className="text-xl font-black text-red-600">RM {product.price.toFixed(2)}</span>
@@ -348,7 +345,6 @@ export default function App() {
                         <span className={`text-[9px] font-bold px-2 py-1 rounded uppercase tracking-wide ${product.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>{product.stock > 0 ? `Stock: ${product.stock}` : 'Sold Out'}</span>
                       </div>
 
-                      {/* BUTANG ADD TO CART PADA KAD */}
                       <div className="flex gap-2">
                         <button onClick={() => navigateTo('product', product)} className="flex-1 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-md font-bold text-xs transition-colors flex justify-center items-center">Details</button>
                         <button disabled={product.stock <= 0} onClick={() => { addToCart(product, 1); alert(`${product.name} berjaya ditambah ke troli!`); }} className={`flex-1 py-2.5 rounded-md font-bold text-xs text-white transition-colors flex justify-center items-center ${product.stock > 0 ? 'bg-blue-600 hover:bg-blue-700 shadow-sm' : 'bg-slate-300 cursor-not-allowed'}`}>
@@ -388,7 +384,6 @@ export default function App() {
             
             <div className="mb-6 border-b border-slate-100 pb-6 flex justify-between items-center">
               <div className="flex flex-col">
-                 {/* HARGA DISKAUN DALAM VIEW DETAIL */}
                  {selectedProduct.originalPrice && selectedProduct.originalPrice > selectedProduct.price ? (
                     <>
                       <span className="text-4xl font-black text-red-600">RM {selectedProduct.price.toFixed(2)}</span>
@@ -485,7 +480,6 @@ export default function App() {
     const [captchaValue, setCaptchaValue] = useState(null); 
     const [userProfile, setUserProfile] = useState(null);
 
-    // Tarik data profil automatik jika ada
     useEffect(() => {
       if(user?.uid) {
          getDoc(doc(db, "users", user.uid)).then(docSnap => {
@@ -633,9 +627,6 @@ export default function App() {
     );
   };
 
-  // ==========================================
-  // VIEW BAHARU: SETTING PROFIL PENGGUNA
-  // ==========================================
   const ProfileView = () => {
     const [saving, setSaving] = useState(false);
     const [profileData, setProfileData] = useState({ phone: '', address: '', region: '' });
@@ -940,9 +931,13 @@ export default function App() {
     );
   };
 
+  // ==========================================
+  // VIEW ADMIN ORDERS (DENGAN TABS & WARNA)
+  // ==========================================
   const AdminOrdersView = () => {
     const [editingDelivery, setEditingDelivery] = useState(null);
     const [viewingOrder, setViewingOrder] = useState(null); 
+    const [activeTab, setActiveTab] = useState('ALL'); // STATE BARU UNTUK TABS
 
     const updateOrderStatus = async (docId, newStatus) => {
       await updateDoc(doc(db, "orders", docId), { status: newStatus });
@@ -970,77 +965,134 @@ export default function App() {
       if(window.confirm("DELETE this order? Cannot be undone.")) await deleteDoc(doc(db, "orders", id));
     };
 
+    // FUNGSI TAPISAN TABS
+    const filteredOrders = activeTab === 'ALL' ? orders : orders.filter(o => o.status === activeTab);
+
+    // KIRA JUMLAH UNTUK SETIAP TAB
+    const statusCounts = {
+      ALL: orders.length,
+      PENDING: orders.filter(o => o.status === 'PENDING').length,
+      PROCESSING: orders.filter(o => o.status === 'PROCESSING').length,
+      POSTED: orders.filter(o => o.status === 'POSTED').length,
+      COMPLETED: orders.filter(o => o.status === 'COMPLETED').length,
+    };
+
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 relative">
         <h1 className="text-xl font-black text-slate-900 mb-5">Manage Orders</h1>
+
+        {/* TABS MENU */}
+        <div className="flex gap-2 mb-5 overflow-x-auto pb-2 scrollbar-hide">
+          {['ALL', 'PENDING', 'PROCESSING', 'POSTED', 'COMPLETED'].map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 rounded-lg font-bold text-xs whitespace-nowrap transition-colors border shadow-sm ${
+                activeTab === tab 
+                  ? (tab === 'PENDING' ? 'bg-red-500 text-white border-red-500' :
+                     tab === 'PROCESSING' ? 'bg-amber-500 text-white border-amber-500' :
+                     tab === 'POSTED' ? 'bg-blue-500 text-white border-blue-500' :
+                     tab === 'COMPLETED' ? 'bg-green-500 text-white border-green-500' :
+                     'bg-slate-800 text-white border-slate-800')
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              {tab} <span className="opacity-75 ml-1">({statusCounts[tab]})</span>
+            </button>
+          ))}
+        </div>
+
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[9px] tracking-wider border-b border-slate-100">
-                  <tr><th className="p-3">Order Info</th><th className="p-3">Customer</th><th className="p-3">Items</th><th className="p-3">Delivery Proof</th><th className="p-3">Actions</th></tr>
+                  <tr><th className="p-3 pl-5">Order Info</th><th className="p-3">Customer</th><th className="p-3">Items</th><th className="p-3">Delivery Proof</th><th className="p-3">Actions</th></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
-                  {orders.map((order) => (
-                    <tr key={order.id}>
-                      <td className="p-3 align-top">
-                        <span className="font-bold text-blue-600 block mb-0.5">{order.orderId}</span>
-                        <span className="text-[10px] text-slate-400 block mb-1.5">{new Date(order.date).toLocaleDateString('en-GB')}</span>
-                        {order.receiptUrl ? <a href={order.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Receipt</a> : <span className="text-[9px] text-slate-400 italic">No Receipt</span>}
-                      </td>
-                      <td className="p-3 align-top">
-                        <p className="font-bold text-slate-900">{order.customerName}</p>
-                        <p className="text-[10px] text-slate-500">{order.phone}</p>
-                        <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{order.region}</p>
-                      </td>
-                      <td className="p-3 align-top">
-                        <ul className="space-y-0.5 mb-1.5">
-                          {order.items?.map((item, idx) => (
-                            <li key={idx}><span className="font-bold text-slate-900">{item.quantity}x</span> {item.name}</li>
-                          ))}
-                        </ul>
-                        <p className="font-black text-blue-600 text-xs">RM {order.total.toFixed(2)}</p>
-                        <button onClick={() => setViewingOrder(order)} className="mt-2 text-[9px] font-bold bg-blue-50 text-blue-600 border border-blue-100 px-2 py-1 rounded w-full hover:bg-blue-100 transition-colors">
-                          Lihat Detail & Nota
-                        </button>
-                      </td>
-                      
-                      <td className="p-3 align-top">
-                        {editingDelivery === order.id ? (
-                          <form onSubmit={(e) => handleDeliverySubmit(e, order.id)} className="space-y-1.5 bg-slate-50 p-1.5 rounded border border-slate-100 w-36">
-                            <input required name="trackingNumber" placeholder="Tracking No." defaultValue={order.trackingNumber||''} className="w-full text-[10px] p-1 border rounded outline-none" />
-                            <input type="file" name="deliveryProof" accept="image/*,application/pdf" className="w-full text-[9px]" />
-                            <div className="flex gap-1">
-                              <button type="submit" className="flex-1 bg-blue-600 text-white py-0.5 rounded text-[9px] font-bold hover:bg-blue-700">Save</button>
-                              <button type="button" onClick={()=>setEditingDelivery(null)} className="flex-1 bg-slate-200 text-slate-700 py-0.5 rounded text-[9px] font-bold hover:bg-slate-300">Cancel</button>
-                            </div>
-                          </form>
-                        ) : (
-                          <div>
-                            {order.trackingNumber ? (
-                              <>
-                                <p className="text-[10px] font-bold text-slate-800 mb-0.5">{order.trackingNumber}</p>
-                                {order.deliveryProofUrl && <a href={order.deliveryProofUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold mb-1 inline-block">View</a>}
-                              </>
-                            ) : <p className="text-[9px] text-slate-400 italic mb-1">Not shipped</p>}
-                            <button onClick={()=>setEditingDelivery(order.id)} className="text-[9px] bg-white border border-slate-200 px-1.5 py-0.5 rounded font-bold text-slate-600 hover:bg-slate-50"><Icons.Truck /> Update</button>
-                          </div>
-                        )}
-                      </td>
+                  {filteredOrders.length === 0 && (
+                    <tr><td colSpan="5" className="p-8 text-center text-slate-500">Tiada pesanan untuk status ini.</td></tr>
+                  )}
+                  {filteredOrders.map((order) => {
+                    // WARNA BACKGROUND SELECT DAN BORDER KIRI JADUAL
+                    let statusBorderClass = '';
+                    let selectColorClass = '';
+                    
+                    if (order.status === 'PENDING') {
+                      statusBorderClass = 'border-l-4 border-l-red-500';
+                      selectColorClass = 'bg-red-50 text-red-700 border-red-200';
+                    } else if (order.status === 'PROCESSING') {
+                      statusBorderClass = 'border-l-4 border-l-amber-500';
+                      selectColorClass = 'bg-amber-50 text-amber-700 border-amber-200';
+                    } else if (order.status === 'POSTED') {
+                      statusBorderClass = 'border-l-4 border-l-blue-500';
+                      selectColorClass = 'bg-blue-50 text-blue-700 border-blue-200';
+                    } else if (order.status === 'COMPLETED') {
+                      statusBorderClass = 'border-l-4 border-l-green-500';
+                      selectColorClass = 'bg-green-50 text-green-700 border-green-200';
+                    }
 
-                      <td className="p-3 align-top">
-                        <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value)} className="w-24 mb-1.5 bg-slate-50 border border-slate-200 rounded p-1 text-[10px] font-bold outline-none cursor-pointer">
-                          <option value="PENDING">PENDING</option>
-                          <option value="PROCESSING">PROCESSING</option>
-                          <option value="POSTED">POSTED</option>
-                          <option value="COMPLETED">COMPLETED</option>
-                        </select>
-                        <div className="flex gap-1 w-24">
-                          <button onClick={() => navigateTo('receipt', order)} className="flex-1 bg-white border border-slate-200 text-slate-600 p-1 rounded flex justify-center hover:bg-slate-50"><Icons.Printer /></button>
-                          <button onClick={() => handleDeleteOrder(order.id)} className="flex-1 bg-red-50 border border-red-100 text-red-500 p-1 rounded flex justify-center hover:bg-red-100"><Icons.Trash /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                    return (
+                      <tr key={order.id} className={`${statusBorderClass} hover:bg-slate-50 transition-colors`}>
+                        <td className="p-3 pl-4 align-top">
+                          <span className="font-bold text-blue-600 block mb-0.5">{order.orderId}</span>
+                          <span className="text-[10px] text-slate-400 block mb-1.5">{new Date(order.date).toLocaleDateString('en-GB')}</span>
+                          {order.receiptUrl ? <a href={order.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Receipt</a> : <span className="text-[9px] text-slate-400 italic">No Receipt</span>}
+                        </td>
+                        <td className="p-3 align-top">
+                          <p className="font-bold text-slate-900">{order.customerName}</p>
+                          <p className="text-[10px] text-slate-500">{order.phone}</p>
+                          <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{order.region}</p>
+                        </td>
+                        <td className="p-3 align-top">
+                          <ul className="space-y-0.5 mb-1.5">
+                            {order.items?.map((item, idx) => (
+                              <li key={idx}><span className="font-bold text-slate-900">{item.quantity}x</span> {item.name}</li>
+                            ))}
+                          </ul>
+                          <p className="font-black text-blue-600 text-xs">RM {order.total.toFixed(2)}</p>
+                          <button onClick={() => setViewingOrder(order)} className="mt-2 text-[9px] font-bold bg-blue-50 text-blue-600 border border-blue-100 px-2 py-1 rounded w-full hover:bg-blue-100 transition-colors">
+                            Lihat Detail & Nota
+                          </button>
+                        </td>
+                        
+                        <td className="p-3 align-top">
+                          {editingDelivery === order.id ? (
+                            <form onSubmit={(e) => handleDeliverySubmit(e, order.id)} className="space-y-1.5 bg-slate-50 p-1.5 rounded border border-slate-100 w-36">
+                              <input required name="trackingNumber" placeholder="Tracking No." defaultValue={order.trackingNumber||''} className="w-full text-[10px] p-1 border rounded outline-none" />
+                              <input type="file" name="deliveryProof" accept="image/*,application/pdf" className="w-full text-[9px]" />
+                              <div className="flex gap-1">
+                                <button type="submit" className="flex-1 bg-blue-600 text-white py-0.5 rounded text-[9px] font-bold hover:bg-blue-700">Save</button>
+                                <button type="button" onClick={()=>setEditingDelivery(null)} className="flex-1 bg-slate-200 text-slate-700 py-0.5 rounded text-[9px] font-bold hover:bg-slate-300">Cancel</button>
+                              </div>
+                            </form>
+                          ) : (
+                            <div>
+                              {order.trackingNumber ? (
+                                <>
+                                  <p className="text-[10px] font-bold text-slate-800 mb-0.5">{order.trackingNumber}</p>
+                                  {order.deliveryProofUrl && <a href={order.deliveryProofUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold mb-1 inline-block">View</a>}
+                                </>
+                              ) : <p className="text-[9px] text-slate-400 italic mb-1">Not shipped</p>}
+                              <button onClick={()=>setEditingDelivery(order.id)} className="text-[9px] bg-white border border-slate-200 px-1.5 py-0.5 rounded font-bold text-slate-600 hover:bg-slate-50"><Icons.Truck /> Update</button>
+                            </div>
+                          )}
+                        </td>
+
+                        <td className="p-3 align-top">
+                          <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value)} className={`w-28 mb-1.5 border rounded p-1.5 text-[10px] font-bold outline-none cursor-pointer ${selectColorClass}`}>
+                            <option value="PENDING">PENDING</option>
+                            <option value="PROCESSING">PROCESSING</option>
+                            <option value="POSTED">POSTED</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                          </select>
+                          <div className="flex gap-1 w-28">
+                            <button onClick={() => navigateTo('receipt', order)} className="flex-1 bg-white border border-slate-200 text-slate-600 p-1.5 rounded flex justify-center hover:bg-slate-50"><Icons.Printer /></button>
+                            <button onClick={() => handleDeleteOrder(order.id)} className="flex-1 bg-white border border-red-200 text-red-500 p-1.5 rounded flex justify-center hover:bg-red-50"><Icons.Trash /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -1178,10 +1230,7 @@ export default function App() {
         name: formData.get('name'),
         category: formData.get('category'),
         price: parseFloat(formData.get('price')),
-        
-        // FUNGSI BAHARU: HARGA ASAL UNTUK DISKAUN
         originalPrice: formData.get('originalPrice') ? parseFloat(formData.get('originalPrice')) : null,
-        
         stock: parseInt(formData.get('stock')),
         weight: parseInt(formData.get('weight')) || 100, 
         description: formData.get('description'),
