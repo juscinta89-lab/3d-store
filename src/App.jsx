@@ -6,6 +6,8 @@ import {
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import ReCAPTCHA from "react-google-recaptcha"; 
+// IMPORT BAHARU UNTUK GRAF / CARTA
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // ----------------------------------------------------
 // MAIN SETTINGS
@@ -44,7 +46,8 @@ const Icons = {
   ShieldCheck: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>,
   MessageSquare: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>,
   User: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>,
-  ChevronDown: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+  ChevronDown: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>,
+  AlertCircle: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
 };
 
 const MOCK_CATEGORIES = ['3D PRINT', 'ROBOT PARTS', 'ELECTRONICS', 'STEM / EDUCATION', 'CUSTOM 3D PRINT'];
@@ -897,47 +900,134 @@ export default function App() {
     );
   };
 
+  // ==========================================
+  // VIEW BAHARU: ADMIN DASHBOARD (INTERAKTIF)
+  // ==========================================
   const AdminDashboardView = () => {
+    // KIRAAN ASAS
     const today = new Date();
     const dailySales = orders.filter(o => new Date(o.date).toDateString() === today.toDateString()).reduce((sum, o) => sum + o.total, 0);
     const monthlySales = orders.filter(o => { const d = new Date(o.date); return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear(); }).reduce((sum, o) => sum + o.total, 0);
     const yearlySales = orders.filter(o => new Date(o.date).getFullYear() === today.getFullYear()).reduce((sum, o) => sum + o.total, 0);
     const pendingCount = orders.filter(o => o.status === 'PENDING').length;
 
+    // DATA CARTA: 7 HARI TERAKHIR
+    const last7Days = [...Array(7)].map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d;
+    }).reverse();
+
+    const chartData = last7Days.map(d => {
+      const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+      const dailyTotal = orders.filter(o => new Date(o.date).toDateString() === d.toDateString()).reduce((sum, o) => sum + o.total, 0);
+      return { name: dateStr, Jualan: dailyTotal };
+    });
+
+    // DATA PRODUK: STOK RENDAH
+    const lowStockProducts = products.filter(p => p.stock <= 5).sort((a,b) => a.stock - b.stock);
+
+    // DATA PRODUK: TOP 5 PALING LARIS
+    const productSales = {};
+    orders.forEach(order => {
+      order.items?.forEach(item => {
+        if(!productSales[item.name]) productSales[item.name] = 0;
+        productSales[item.name] += item.quantity;
+      });
+    });
+    const topProducts = Object.entries(productSales).sort((a,b) => b[1] - a[1]).slice(0, 5);
+
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <h1 className="text-xl font-black text-slate-900 mb-5">Dashboard Overview</h1>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        <h1 className="text-2xl font-black text-slate-900">Dashboard Overview</h1>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <div className="bg-white p-4 rounded-xl border border-slate-200">
-            <p className="text-slate-400 text-[9px] font-bold uppercase tracking-widest">Today's Sales</p>
-            <p className="text-xl font-black text-blue-600 mt-1">RM {dailySales.toFixed(2)}</p>
+        {/* KAD KPI */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10 text-blue-600"><Icons.TrendingUp /></div>
+            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Jualan Hari Ini</p>
+            <p className="text-2xl font-black text-blue-600 mt-1">RM {dailySales.toFixed(2)}</p>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-slate-200">
-            <p className="text-slate-400 text-[9px] font-bold uppercase tracking-widest">This Month</p>
-            <p className="text-xl font-black text-green-600 mt-1">RM {monthlySales.toFixed(2)}</p>
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-4 opacity-10 text-green-600"><Icons.TrendingUp /></div>
+            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Bulan Ini</p>
+            <p className="text-2xl font-black text-green-600 mt-1">RM {monthlySales.toFixed(2)}</p>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-slate-200">
-            <p className="text-slate-400 text-[9px] font-bold uppercase tracking-widest">This Year</p>
-            <p className="text-xl font-black text-slate-800 mt-1">RM {yearlySales.toFixed(2)}</p>
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-4 opacity-10 text-slate-800"><Icons.TrendingUp /></div>
+            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Tahun Ini</p>
+            <p className="text-2xl font-black text-slate-800 mt-1">RM {yearlySales.toFixed(2)}</p>
           </div>
-          <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 text-white">
-            <p className="text-slate-400 text-[9px] font-bold uppercase tracking-widest">Pending Orders</p>
-            <p className="text-xl font-black text-white mt-1">{pendingCount}</p>
-            <button onClick={()=>navigateTo('admin_orders')} className="mt-2 text-[10px] font-bold bg-white/10 px-2 py-1 rounded w-full hover:bg-white/20 transition-colors">Manage</button>
+          <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 text-white shadow-md relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-20 text-red-500"><Icons.ClipboardList /></div>
+            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Pending Orders</p>
+            <p className="text-2xl font-black text-white mt-1">{pendingCount}</p>
+            <button onClick={()=>navigateTo('admin_orders')} className="mt-3 text-[10px] font-bold bg-white/10 px-3 py-1.5 rounded-lg w-full hover:bg-white/20 transition-colors">Urus Pesanan</button>
           </div>
+        </div>
+
+        {/* GRAF DAN INFO TAMBAHAN */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* CARTA JUALAN */}
+          <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h2 className="text-sm font-bold text-slate-800 mb-6 flex items-center gap-2"><Icons.TrendingUp /> Jualan 7 Hari Terakhir</h2>
+            <div className="h-72 w-full text-xs font-medium">
+              <ResponsiveContainer width="100%" height="100%">
+                 <BarChart data={chartData}>
+                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b'}} dy={10} />
+                   <YAxis axisLine={false} tickLine={false} tickFormatter={(value) => `RM${value}`} tick={{fill: '#64748b'}} dx={-10} />
+                   <Tooltip 
+                     cursor={{fill: '#f8fafc'}} 
+                     contentStyle={{borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontWeight: 'bold'}} 
+                   />
+                   <Bar dataKey="Jualan" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={40} />
+                 </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* INFO STOK DAN TOP PRODUK */}
+          <div className="space-y-6">
+             {/* AMARAN STOK RENDAH */}
+             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+               <h2 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2 text-red-600"><Icons.AlertCircle /> Amaran Stok Rendah</h2>
+               <div className="space-y-3">
+                 {lowStockProducts.length === 0 ? <p className="text-xs text-slate-500 italic">Semua stok produk mencukupi.</p> : null}
+                 {lowStockProducts.map(p => (
+                    <div key={p.id} className="flex justify-between items-center text-xs p-2 hover:bg-slate-50 rounded-lg cursor-pointer" onClick={() => navigateTo('admin_products')}>
+                       <span className="font-bold text-slate-700 truncate pr-2" title={p.name}>{p.name}</span>
+                       <span className={`font-black px-2 py-1 rounded-md whitespace-nowrap ${p.stock === 0 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{p.stock} unit</span>
+                    </div>
+                 ))}
+               </div>
+             </div>
+
+             {/* TOP 5 PRODUK */}
+             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <h2 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2 text-blue-600"><Icons.Box /> Top 5 Paling Laris</h2>
+                <div className="space-y-2 text-xs">
+                  {topProducts.length === 0 ? <p className="text-xs text-slate-500 italic">Belum ada data jualan.</p> : null}
+                  {topProducts.map((p, idx) => (
+                     <div key={idx} className="flex justify-between items-center p-2 hover:bg-slate-50 rounded-lg">
+                        <span className="font-bold text-slate-700 truncate pr-2">{idx+1}. {p[0]}</span>
+                        <span className="font-black text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md whitespace-nowrap">{p[1]} terjual</span>
+                     </div>
+                  ))}
+                </div>
+             </div>
+          </div>
+
         </div>
       </div>
     );
   };
 
-  // ==========================================
-  // VIEW ADMIN ORDERS (DENGAN TABS & WARNA)
-  // ==========================================
   const AdminOrdersView = () => {
     const [editingDelivery, setEditingDelivery] = useState(null);
     const [viewingOrder, setViewingOrder] = useState(null); 
-    const [activeTab, setActiveTab] = useState('ALL'); // STATE BARU UNTUK TABS
+    const [activeTab, setActiveTab] = useState('ALL'); 
 
     const updateOrderStatus = async (docId, newStatus) => {
       await updateDoc(doc(db, "orders", docId), { status: newStatus });
@@ -965,10 +1055,8 @@ export default function App() {
       if(window.confirm("DELETE this order? Cannot be undone.")) await deleteDoc(doc(db, "orders", id));
     };
 
-    // FUNGSI TAPISAN TABS
     const filteredOrders = activeTab === 'ALL' ? orders : orders.filter(o => o.status === activeTab);
 
-    // KIRA JUMLAH UNTUK SETIAP TAB
     const statusCounts = {
       ALL: orders.length,
       PENDING: orders.filter(o => o.status === 'PENDING').length,
@@ -981,7 +1069,6 @@ export default function App() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 relative">
         <h1 className="text-xl font-black text-slate-900 mb-5">Manage Orders</h1>
 
-        {/* TABS MENU */}
         <div className="flex gap-2 mb-5 overflow-x-auto pb-2 scrollbar-hide">
           {['ALL', 'PENDING', 'PROCESSING', 'POSTED', 'COMPLETED'].map(tab => (
             <button
@@ -1013,7 +1100,6 @@ export default function App() {
                     <tr><td colSpan="5" className="p-8 text-center text-slate-500">Tiada pesanan untuk status ini.</td></tr>
                   )}
                   {filteredOrders.map((order) => {
-                    // WARNA BACKGROUND SELECT DAN BORDER KIRI JADUAL
                     let statusBorderClass = '';
                     let selectColorClass = '';
                     
