@@ -8,14 +8,16 @@ import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import ReCAPTCHA from "react-google-recaptcha"; 
 
 // ----------------------------------------------------
-// MAIN SETTINGS
+// MAIN SETTINGS (KUNCI RECAPTCHA BAHARU DIMASUKKAN)
 // ----------------------------------------------------
 const WHATSAPP_NUMBER = "60194155722"; 
 const ADMIN_EMAILS = ['juscinta89@gmail.com']; 
 const QR_PAYMENT_URL = "https://i.postimg.cc/wjk126Zs/qr-code.png"; 
 const TELEGRAM_BOT_TOKEN = "8636588086:AAHTfHyVL5xCjBMG3R17oAaaeIzgwmodSEw"; 
 const TELEGRAM_CHAT_ID = "-5504733427"; 
-const RECAPTCHA_SITE_KEY = "6LeVT40tAAAAANBT0pA5gUniT2dyuhWk5c0J07-9"; 
+
+// INI KUNCI BARU ANDA
+const RECAPTCHA_SITE_KEY = "6LdqCo4tAAAAAF_VE2TTRCIo41RARvKcoBRP-DoC"; 
 
 const Icons = {
   Cart: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>,
@@ -53,7 +55,7 @@ export default function App() {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [customRequests, setCustomRequests] = useState([]); // State untuk Custom Quotes
+  const [customRequests, setCustomRequests] = useState([]); 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null); 
   const [completedOrder, setCompletedOrder] = useState(null);
@@ -90,7 +92,6 @@ export default function App() {
       let qOrders;
       if (user.role === 'admin') {
         qOrders = query(collection(db, "orders"), orderBy("date", "desc"));
-        // Khas untuk Admin: Tarik data Custom Request
         const qRequests = query(collection(db, "custom_requests"), orderBy("date", "desc"));
         onSnapshot(qRequests, (snapshot) => {
           setCustomRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -180,7 +181,6 @@ export default function App() {
           <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-2">Main Menu</p>
           <button onClick={() => navigateTo('home')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'home' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Store /> Store</button>
           
-          {/* MENU BAHARU: CUSTOM PRINT */}
           <button onClick={() => navigateTo('custom_print')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'custom_print' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
             <Icons.FileUp /> Custom 3D Print
           </button>
@@ -194,7 +194,6 @@ export default function App() {
             <button onClick={() => navigateTo('myorders')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'myorders' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Orders /> My Orders</button>
           )}
 
-          {/* MENU BAHARU: POLICIES */}
           <button onClick={() => navigateTo('policies')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'policies' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
             <Icons.ShieldCheck /> Policies & FAQ
           </button>
@@ -205,7 +204,6 @@ export default function App() {
               <button onClick={() => navigateTo('admin_dashboard')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_dashboard' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.TrendingUp /> Dashboard</button>
               <button onClick={() => navigateTo('admin_orders')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_orders' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.ClipboardList /> Manage Orders</button>
               
-              {/* MENU BAHARU: MANAGE QUOTES */}
               <button onClick={() => navigateTo('admin_quotes')} className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg font-medium ${view === 'admin_quotes' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
                 <div className="flex items-center gap-3"><Icons.MessageSquare /> Manage Quotes</div>
                 {customRequests.filter(r=>r.status==='NEW').length > 0 && <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{customRequests.filter(r=>r.status==='NEW').length}</span>}
@@ -248,7 +246,6 @@ export default function App() {
   );
 
   const HomeView = () => {
-    // STATE UNTUK CARIAN PRODUK
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredProducts = products.filter(product => 
@@ -273,7 +270,6 @@ export default function App() {
         </div>
 
         <div className="py-6 mt-2">
-          {/* BAHAGIAN CARIAN (SEARCH BAR) */}
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <h2 className="text-lg font-black text-slate-900 w-full md:w-auto">All Products</h2>
             <div className="relative w-full md:w-72">
@@ -573,9 +569,6 @@ export default function App() {
     );
   };
 
-  // ==========================================
-  // VIEW BAHARU: CUSTOM 3D PRINT REQUEST
-  // ==========================================
   const CustomPrintView = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [captchaValue, setCaptchaValue] = useState(null);
@@ -611,10 +604,8 @@ export default function App() {
           status: 'NEW'
         };
 
-        // Simpan dalam koleksi baharu 'custom_requests'
         await addDoc(collection(db, "custom_requests"), requestData);
 
-        // Hantar Telegram Note
         if (TELEGRAM_BOT_TOKEN !== "LETAK_TOKEN_BOT_DI_SINI") {
           const telegramMessage = `🛠️ *TEMPAHAN CUSTOM 3D BARU!*\n\n*ID:* \`${requestId}\`\n*Nama:* ${requestData.customerName}\n*No HP:* ${requestData.phone}\n*Detail:* ${requestData.description}`;
           try {
@@ -647,7 +638,7 @@ export default function App() {
           <div><label className="block text-xs font-bold text-slate-700 mb-1">Email (Pilihan)</label><input type="email" name="email" className="w-full border border-slate-200 rounded p-2.5 outline-none" /></div>
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">Keterangan / Detail Rekaan *</label>
-            <textarea required name="description" rows="4" placeholder="Cth: Saya nak print kotak untuk Arduino, warna hitam, material PETG..." className="w-full border border-slate-200 rounded p-2.5 outline-none"></textarea>
+            <textarea required name="description" rows="4" placeholder="Cth: Saya nak print kotak untuk Arduino, warna hitam, material PETG..." className="w-full border border-slate-200 rounded p-2.5 outline-none whitespace-pre-wrap"></textarea>
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">Muat Naik Fail (STL / OBJ / Gambar)</label>
@@ -667,9 +658,6 @@ export default function App() {
     );
   };
 
-  // ==========================================
-  // VIEW BAHARU: POLICIES & FAQ
-  // ==========================================
   const PoliciesView = () => (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
       <h1 className="text-2xl font-black text-slate-900 mb-4">Policies & FAQ</h1>
@@ -924,7 +912,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* MODAL POP-UP UNTUK DETAIL & NOTA ORDER */}
           {viewingOrder && (
             <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
               <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
@@ -986,9 +973,6 @@ export default function App() {
     );
   };
 
-  // ==========================================
-  // VIEW BAHARU: ADMIN QUOTES (CUSTOM REQUESTS)
-  // ==========================================
   const AdminQuotesView = () => {
     const updateQuoteStatus = async (id, status) => {
       await updateDoc(doc(db, "custom_requests", id), { status });
