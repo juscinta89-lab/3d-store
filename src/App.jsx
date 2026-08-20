@@ -79,7 +79,6 @@ export default function App() {
     return () => unsubscribe();
   }, [view]);
 
-  // Fetch Products
   useEffect(() => {
     const q = query(collection(db, "products"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -89,7 +88,6 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Fetch Orders & Custom Requests
   useEffect(() => {
     if (user) {
       let qOrders;
@@ -426,7 +424,7 @@ export default function App() {
               
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Notes</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows="2" className="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition-colors" placeholder="e.g. Senarai nama untuk nametag (Sila tekan Enter bagi setiap nama)..."></textarea>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows="2" className="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition-colors" placeholder="e.g. Senarai nama untuk nametag..."></textarea>
               </div>
 
               <button onClick={() => { addToCart(selectedProduct, qty, notes); navigateTo('cart'); }} disabled={selectedProduct.stock <= 0} className={`w-full py-3.5 rounded-lg font-bold text-sm uppercase tracking-wide flex justify-center items-center gap-2 ${selectedProduct.stock > 0 ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}>
@@ -1064,28 +1062,38 @@ export default function App() {
       alert("Maklumat pelanggan berjaya disalin!");
     };
 
-    // ==========================================
-    // FUNGSI BAHARU: TOGGLE CHECKLIST NOTA
-    // ==========================================
-    const toggleNoteTask = async (order, itemIndex, lineIndex) => {
-      try {
-        const updatedItems = [...order.items];
-        const item = updatedItems[itemIndex];
-        const completedNotes = item.completedNotes || [];
-        
-        if (completedNotes.includes(lineIndex)) {
-          item.completedNotes = completedNotes.filter(i => i !== lineIndex);
-        } else {
-          item.completedNotes = [...completedNotes, lineIndex];
+    // ==============================================================
+    // FUNGSI BAHARU: KEMAS KINI CHECKLIST LOKAL (TIDAK TUTUP MODAL)
+    // ==============================================================
+    const toggleNoteTask = (itemIndex, lineIndex) => {
+      const updatedItems = [...viewingOrder.items];
+      const item = { ...updatedItems[itemIndex] }; // Copy item supaya tak kacau state asal
+      const completedNotes = item.completedNotes || [];
+      
+      if (completedNotes.includes(lineIndex)) {
+        item.completedNotes = completedNotes.filter(i => i !== lineIndex);
+      } else {
+        item.completedNotes = [...completedNotes, lineIndex];
+      }
+      
+      updatedItems[itemIndex] = item;
+      
+      // Update UI Modal sahaja (Jangan hantar ke Firebase lagi)
+      setViewingOrder({ ...viewingOrder, items: updatedItems });
+    };
+
+    // ==============================================================
+    // FUNGSI BAHARU: SIMPAN KE FIREBASE HANYA BILA TEKAN BUTANG 'X'
+    // ==============================================================
+    const closeAndSaveModal = async () => {
+      if (viewingOrder) {
+        try {
+          // Bila tekan X, baru hantar perubahan checklist ke Firebase
+          await updateDoc(doc(db, "orders", viewingOrder.id), { items: viewingOrder.items });
+        } catch(err) {
+          console.error("Gagal simpan checklist", err);
         }
-        
-        // Update modal UI immediately
-        setViewingOrder({ ...order, items: updatedItems });
-        
-        // Save to Firebase
-        await updateDoc(doc(db, "orders", order.id), { items: updatedItems });
-      } catch(err) {
-        console.error("Gagal simpan checklist", err);
+        setViewingOrder(null); // Tutup Modal
       }
     };
 
@@ -1244,15 +1252,13 @@ export default function App() {
             </div>
           </div>
 
-          {/* ========================================== */}
-          {/* MODAL POP-UP (KINI ADA FUNGSI CHECKLIST) */}
-          {/* ========================================== */}
           {viewingOrder && (
             <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
               <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
                 <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                   <h2 className="font-black text-lg text-slate-900">Detail Pesanan: {viewingOrder.orderId}</h2>
-                  <button onClick={() => setViewingOrder(null)} className="p-1 text-slate-400 hover:bg-slate-200 hover:text-red-500 rounded"><Icons.X /></button>
+                  {/* BUTANG PANGKAH MEMANGGIL FUNGSI SIMPAN */}
+                  <button onClick={closeAndSaveModal} className="p-1 text-slate-400 hover:bg-slate-200 hover:text-red-500 rounded"><Icons.X /></button>
                 </div>
                 
                 <div className="p-5 overflow-y-auto space-y-6 text-sm">
@@ -1273,7 +1279,6 @@ export default function App() {
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">Senarai Barang & Nota</p>
                     <div className="space-y-3">
                       {viewingOrder.items?.map((item, itemIdx) => {
-                        // POTONG NOTA KEPADA BARISAN-BARISAN (LINES)
                         const lines = item.notes ? item.notes.split('\n') : [];
 
                         return (
@@ -1285,15 +1290,13 @@ export default function App() {
                               <p className="font-black text-slate-900 text-sm">RM {(item.price * item.quantity).toFixed(2)}</p>
                             </div>
                             
-                            {/* KAWASAN RENDER CHECKLIST */}
                             {item.notes ? (
                               <div className="bg-amber-50 border border-amber-200 p-3 rounded text-xs text-amber-900">
                                 <span className="font-black uppercase tracking-wider block mb-2 text-[10px] text-amber-700 border-b border-amber-200/50 pb-1">💬 Nota Checklist Pelanggan:</span> 
                                 <div className="space-y-2 mt-1.5">
                                   {lines.map((line, lineIdx) => {
-                                    if (!line.trim()) return null; // Abaikan barisan kosong
+                                    if (!line.trim()) return null; 
                                     
-                                    // Semak jika barisan ini ada dalam array completedNotes
                                     const isChecked = item.completedNotes?.includes(lineIdx);
                                     
                                     return (
@@ -1301,7 +1304,7 @@ export default function App() {
                                         <input 
                                           type="checkbox" 
                                           checked={!!isChecked} 
-                                          onChange={() => toggleNoteTask(viewingOrder, itemIdx, lineIdx)}
+                                          onChange={() => toggleNoteTask(itemIdx, lineIdx)}
                                           className="mt-0.5 w-4 h-4 rounded border-amber-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                                         />
                                         <span className={`font-medium transition-colors ${isChecked ? 'line-through text-amber-900/40' : 'text-amber-900'}`}>
