@@ -61,7 +61,7 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [customRequests, setCustomRequests] = useState([]); 
-  const [promos, setPromos] = useState([]); // State untuk Kod Promo
+  const [promos, setPromos] = useState([]); 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null); 
   const [completedOrder, setCompletedOrder] = useState(null);
@@ -161,6 +161,9 @@ export default function App() {
   };
   const handleLogout = () => { signOut(auth); };
 
+  // ====================================================
+  // KOMPONEN-KOMPONEN KECIL (COMPONENTS)
+  // ====================================================
   const FloatingWhatsApp = () => (
     <a 
       href={`https://wa.me/${WHATSAPP_NUMBER}`} 
@@ -205,11 +208,7 @@ export default function App() {
         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-2">Main Menu</p>
           <button onClick={() => navigateTo('home')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'home' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Store /> Store</button>
-          
-          <button onClick={() => navigateTo('custom_print')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'custom_print' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
-            <Icons.FileUp /> Custom 3D Print
-          </button>
-
+          <button onClick={() => navigateTo('custom_print')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'custom_print' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.FileUp /> Custom 3D Print</button>
           <button onClick={() => navigateTo('cart')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium relative ${view === 'cart' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
             <Icons.Cart /> Cart
             {cart.length > 0 && <span className={`absolute right-4 text-xs font-bold px-2 py-0.5 rounded-full ${view === 'cart' ? 'bg-white text-blue-600' : 'bg-blue-500 text-white'}`}>{cart.length}</span>}
@@ -222,24 +221,18 @@ export default function App() {
             </>
           )}
 
-          <button onClick={() => navigateTo('policies')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'policies' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
-            <Icons.ShieldCheck /> Policies & FAQ
-          </button>
+          <button onClick={() => navigateTo('policies')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'policies' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.ShieldCheck /> Policies & FAQ</button>
 
           {user?.role === 'admin' && (
             <>
               <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-6">Administration</p>
               <button onClick={() => navigateTo('admin_dashboard')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_dashboard' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.TrendingUp /> Dashboard</button>
               <button onClick={() => navigateTo('admin_orders')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_orders' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.ClipboardList /> Manage Orders</button>
-              
               <button onClick={() => navigateTo('admin_quotes')} className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg font-medium ${view === 'admin_quotes' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
                 <div className="flex items-center gap-3"><Icons.MessageSquare /> Manage Quotes</div>
                 {customRequests.filter(r=>r.status==='NEW').length > 0 && <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{customRequests.filter(r=>r.status==='NEW').length}</span>}
               </button>
-
               <button onClick={() => navigateTo('admin_products')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_products' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Box /> Manage Products</button>
-              
-              {/* MENU BAHARU: MANAGE PROMOS */}
               <button onClick={() => navigateTo('admin_promos')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_promos' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Ticket /> Manage Promos</button>
             </>
           )}
@@ -258,7 +251,6 @@ export default function App() {
 
   const TopHeader = () => {
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-
     return (
       <div className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 h-14 flex items-center justify-between px-4 sm:px-6 print:hidden">
         <div className="flex items-center gap-3">
@@ -269,7 +261,6 @@ export default function App() {
           </div>
           <h2 className="hidden md:block text-lg font-black text-slate-800 capitalize tracking-wide">{view === 'home' ? 'Store' : view.replace('_', ' ')}</h2>
         </div>
-        
         <div className="flex items-center gap-4">
            {user && (
              <div className="relative hidden md:block">
@@ -285,7 +276,6 @@ export default function App() {
                )}
              </div>
            )}
-           
            <button onClick={() => navigateTo('cart')} className="relative p-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full">
              <Icons.Cart />
              {cart.length > 0 && <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full shadow-sm">{cart.length}</span>}
@@ -297,7 +287,6 @@ export default function App() {
 
   const HomeView = () => {
     const [searchTerm, setSearchTerm] = useState('');
-
     const filteredProducts = products.filter(product => 
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
       product.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -323,14 +312,10 @@ export default function App() {
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <h2 className="text-lg font-black text-slate-900 w-full md:w-auto">All Products</h2>
             <div className="relative w-full md:w-72">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <Icons.Search />
-              </div>
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400"><Icons.Search /></div>
               <input 
-                type="text" 
-                placeholder="Search parts, 3D prints..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                type="text" placeholder="Search parts, 3D prints..." 
+                value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2.5 w-full border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all bg-white"
               />
             </div>
@@ -347,12 +332,10 @@ export default function App() {
                   <div className="relative aspect-square overflow-hidden bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100 cursor-pointer" onClick={() => navigateTo('product', product)}>
                     <img src={product.image || 'https://placehold.co/400x400?text=No+Image'} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={product.name} className="w-full h-full object-contain hover:scale-105 transition-transform duration-300" />
                     <div className="absolute top-2 left-2 bg-white/90 backdrop-blur text-[9px] font-bold px-2 py-1 rounded text-slate-700 uppercase tracking-wide border border-slate-200">{product.category}</div>
-                    
                     {product.originalPrice && product.originalPrice > product.price && (
                       <div className="absolute top-2 right-2 bg-red-600 text-white text-[9px] font-black px-2 py-1 rounded uppercase tracking-widest shadow-sm">- SALE</div>
                     )}
                   </div>
-                  
                   <div className="p-4 flex-grow flex flex-col justify-between">
                     <div>
                       <h3 className="font-bold text-slate-900 mb-1 leading-tight text-sm cursor-pointer hover:text-blue-600 transition-colors" onClick={() => navigateTo('product', product)}>{product.name}</h3>
@@ -362,22 +345,16 @@ export default function App() {
                       <div className="flex justify-between items-center mb-4">
                         <div className="flex flex-col">
                           {product.originalPrice && product.originalPrice > product.price ? (
-                            <>
-                              <span className="text-xl font-black text-red-600">RM {product.price.toFixed(2)}</span>
-                              <span className="text-[10px] font-bold text-slate-400 line-through">RM {product.originalPrice.toFixed(2)}</span>
-                            </>
+                            <><span className="text-xl font-black text-red-600">RM {product.price.toFixed(2)}</span><span className="text-[10px] font-bold text-slate-400 line-through">RM {product.originalPrice.toFixed(2)}</span></>
                           ) : (
                             <span className="text-xl font-black text-slate-900">RM {product.price.toFixed(2)}</span>
                           )}
                         </div>
                         <span className={`text-[9px] font-bold px-2 py-1 rounded uppercase tracking-wide ${product.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>{product.stock > 0 ? `Stock: ${product.stock}` : 'Sold Out'}</span>
                       </div>
-
                       <div className="flex gap-2">
                         <button onClick={() => navigateTo('product', product)} className="flex-1 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-md font-bold text-xs transition-colors flex justify-center items-center">Details</button>
-                        <button disabled={product.stock <= 0} onClick={() => { addToCart(product, 1); alert(`${product.name} berjaya ditambah ke troli!`); }} className={`flex-1 py-2.5 rounded-md font-bold text-xs text-white transition-colors flex justify-center items-center ${product.stock > 0 ? 'bg-blue-600 hover:bg-blue-700 shadow-sm' : 'bg-slate-300 cursor-not-allowed'}`}>
-                          Add to Cart
-                        </button>
+                        <button disabled={product.stock <= 0} onClick={() => { addToCart(product, 1); alert(`${product.name} berjaya ditambah ke troli!`); }} className={`flex-1 py-2.5 rounded-md font-bold text-xs text-white transition-colors flex justify-center items-center ${product.stock > 0 ? 'bg-blue-600 hover:bg-blue-700 shadow-sm' : 'bg-slate-300 cursor-not-allowed'}`}>Add to Cart</button>
                       </div>
                     </div>
                   </div>
@@ -393,11 +370,10 @@ export default function App() {
   const ProductView = () => {
     const [qty, setQty] = useState(1);
     const [notes, setNotes] = useState('');
-    const [productReviews, setProductReviews] = useState([]); // Reviews untuk produk ini
+    const [productReviews, setProductReviews] = useState([]); 
     
     if (!selectedProduct) return null;
 
-    // Tarik reviews bila masuk halaman produk
     useEffect(() => {
       const q = query(collection(db, "reviews"), where("productId", "==", selectedProduct.id), orderBy("date", "desc"));
       const unsub = onSnapshot(q, (snapshot) => {
@@ -410,9 +386,7 @@ export default function App() {
 
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-        <button onClick={() => navigateTo('home')} className="flex items-center text-slate-500 font-bold mb-4 text-sm gap-1 w-fit hover:text-blue-600 transition-colors">
-          <Icons.ArrowLeft /> Back
-        </button>
+        <button onClick={() => navigateTo('home')} className="flex items-center text-slate-500 font-bold mb-4 text-sm gap-1 w-fit hover:text-blue-600 transition-colors"><Icons.ArrowLeft /> Back</button>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row mb-8">
           <div className="md:w-1/2 bg-slate-50 p-6 flex items-center justify-center border-b md:border-b-0 md:border-r border-slate-200">
             <img src={selectedProduct.image} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={selectedProduct.name} className="w-full max-w-xs rounded-xl object-contain drop-shadow-md" />
@@ -428,14 +402,10 @@ export default function App() {
             </div>
             <h1 className="text-2xl font-black text-slate-900 mb-3">{selectedProduct.name}</h1>
             <p className="text-slate-600 text-sm mb-6 leading-relaxed">{selectedProduct.description}</p>
-            
             <div className="mb-6 border-b border-slate-100 pb-6 flex justify-between items-center">
               <div className="flex flex-col">
                  {selectedProduct.originalPrice && selectedProduct.originalPrice > selectedProduct.price ? (
-                    <>
-                      <span className="text-4xl font-black text-red-600">RM {selectedProduct.price.toFixed(2)}</span>
-                      <span className="text-sm font-bold text-slate-400 line-through mt-1">Harga Asal: RM {selectedProduct.originalPrice.toFixed(2)}</span>
-                    </>
+                    <><span className="text-4xl font-black text-red-600">RM {selectedProduct.price.toFixed(2)}</span><span className="text-sm font-bold text-slate-400 line-through mt-1">Harga Asal: RM {selectedProduct.originalPrice.toFixed(2)}</span></>
                   ) : (
                     <span className="text-4xl font-black text-slate-900 block">RM {selectedProduct.price.toFixed(2)}</span>
                   )}
@@ -443,7 +413,6 @@ export default function App() {
               </div>
               <span className={`px-3 py-1 rounded font-bold text-xs uppercase tracking-wide ${selectedProduct.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>{selectedProduct.stock > 0 ? `Stock: ${selectedProduct.stock}` : 'Sold Out'}</span>
             </div>
-
             <div className="space-y-5">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Quantity</label>
@@ -453,12 +422,10 @@ export default function App() {
                   <button onClick={() => setQty(Math.min(selectedProduct.stock, qty + 1))} className="p-2.5 text-slate-500 hover:text-blue-600"><Icons.Plus /></button>
                 </div>
               </div>
-              
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Notes</label>
                 <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows="2" className="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition-colors" placeholder="e.g. Senarai nama untuk nametag..."></textarea>
               </div>
-
               <button onClick={() => { addToCart(selectedProduct, qty, notes); navigateTo('cart'); }} disabled={selectedProduct.stock <= 0} className={`w-full py-3.5 rounded-lg font-bold text-sm uppercase tracking-wide flex justify-center items-center gap-2 ${selectedProduct.stock > 0 ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}>
                 <Icons.Cart /> {selectedProduct.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
               </button>
@@ -466,7 +433,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* SECTION ULASAN PELANGGAN */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
            <h2 className="text-lg font-black text-slate-900 mb-4">Ulasan Pelanggan ({productReviews.length})</h2>
            {productReviews.length === 0 ? (
@@ -476,9 +442,7 @@ export default function App() {
                {productReviews.map(r => (
                  <div key={r.id} className="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <div className="flex gap-0.5">
-                         {[1,2,3,4,5].map(star => <Icons.Star key={star} filled={star <= r.rating} />)}
-                      </div>
+                      <div className="flex gap-0.5">{[1,2,3,4,5].map(star => <Icons.Star key={star} filled={star <= r.rating} />)}</div>
                       <span className="font-bold text-xs text-slate-800">{r.userName}</span>
                       <span className="text-[10px] text-slate-400 ml-auto">{new Date(r.date).toLocaleDateString('en-GB')}</span>
                     </div>
@@ -513,9 +477,7 @@ export default function App() {
                     <p className="text-[10px] font-bold text-slate-400">{((item.weight || 100) * item.quantity)}g</p>
                   </div>
                   {item.notes && (
-                    <div className="mt-1.5 bg-slate-50 p-1.5 rounded text-[10px] text-slate-500 border border-slate-100 whitespace-pre-wrap">
-                      <span className="font-bold block mb-0.5">Notes: </span>{item.notes}
-                    </div>
+                    <div className="mt-1.5 bg-slate-50 p-1.5 rounded text-[10px] text-slate-500 border border-slate-100 whitespace-pre-wrap"><span className="font-bold block mb-0.5">Notes: </span>{item.notes}</div>
                   )}
                 </div>
                 <div className="flex items-center justify-between w-full sm:w-auto gap-4 mt-2 sm:mt-0">
@@ -549,8 +511,6 @@ export default function App() {
     const [region, setRegion] = useState('');
     const [captchaValue, setCaptchaValue] = useState(null); 
     const [userProfile, setUserProfile] = useState(null);
-    
-    // Promo State
     const [promoInput, setPromoInput] = useState('');
     const [appliedPromo, setAppliedPromo] = useState(null);
 
@@ -566,7 +526,6 @@ export default function App() {
       }
     }, [user]);
 
-    // FUNGSI CEK PROMO
     const handleApplyPromo = async () => {
        if(!promoInput) return;
        const q = query(collection(db, "promo_codes"), where("code", "==", promoInput.toUpperCase()));
@@ -597,7 +556,6 @@ export default function App() {
       }
     }
 
-    // KIRA DISKAUN SELEPAS PROMO
     let discountAmount = 0;
     if(appliedPromo) {
        if(appliedPromo.type === 'percentage') {
@@ -606,17 +564,11 @@ export default function App() {
           discountAmount = appliedPromo.value;
        }
     }
-    
-    // Pastikan total tidak negatif
     const grandTotal = Math.max(0, cartSubtotal - discountAmount + shippingFee);
 
     const handleCheckoutSubmit = async (e) => {
       e.preventDefault();
-      
-      if (!captchaValue) { 
-        alert("Sila tandakan kotak 'I'm not a robot' (reCAPTCHA) terlebih dahulu untuk meneruskan."); 
-        return; 
-      }
+      if (!captchaValue) { alert("Sila tandakan kotak reCAPTCHA."); return; }
       if (!region) { alert("Please select a shipping region."); return; }
 
       setIsSubmitting(true);
@@ -638,31 +590,21 @@ export default function App() {
           email: user?.email || formData.get('email') || 'Guest',
           address: formData.get('address'), region, items: cart,
           totalWeight: cartTotalWeight, subtotal: cartSubtotal,
-          discountAmount, promoCodeUsed: appliedPromo ? appliedPromo.code : null, // Simpan rekod promo
+          discountAmount, promoCodeUsed: appliedPromo ? appliedPromo.code : null, 
           shippingFee, total: grandTotal, receiptUrl, status: 'PENDING'
         };
         
         await addDoc(collection(db, "orders"), orderData);
-
-        for (const item of cart) {
-          await updateDoc(doc(db, "products", item.id), { stock: increment(-item.quantity) });
-        }
+        for (const item of cart) { await updateDoc(doc(db, "products", item.id), { stock: increment(-item.quantity) }); }
         
-        if (TELEGRAM_BOT_TOKEN !== "LETAK_TOKEN_BOT_DI_SINI" && TELEGRAM_CHAT_ID !== "LETAK_CHAT_ID_DI_SINI") {
-          const telegramMessage = `🚨 *ORDER BARU MASUK!*\n\n*ID:* \`${orderId}\`\n*Pelanggan:* ${orderData.customerName}\n*Lokasi:* ${orderData.region}\n*Total:* RM ${grandTotal.toFixed(2)}\n\nSila semak Papan Pemuka Admin segera!`;
-          try {
-            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramMessage, parse_mode: 'Markdown' })
-            });
-          } catch (err) {}
+        if (TELEGRAM_BOT_TOKEN !== "LETAK_TOKEN_BOT_DI_SINI") {
+          const telegramMessage = `🚨 *ORDER BARU MASUK!*\n\n*ID:* \`${orderId}\`\n*Pelanggan:* ${orderData.customerName}\n*Total:* RM ${grandTotal.toFixed(2)}`;
+          try { await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramMessage, parse_mode: 'Markdown' }) }); } catch (err) {}
         }
 
-        let waText = `*NEW ORDER (3D STORE)*\n\n*Order ID:* ${orderId}\n*Name:* ${orderData.customerName}\n*Phone:* ${orderData.phone}\n*Address:* ${orderData.address}\n*Region:* ${orderData.region}\n\n*Items:*\n`;
+        let waText = `*NEW ORDER (3D STORE)*\n\n*Order ID:* ${orderId}\n*Name:* ${orderData.customerName}\n*Region:* ${orderData.region}\n\n*Items:*\n`;
         cart.forEach(item => {
            waText += `- ${item.quantity}x ${item.name} (RM ${item.price.toFixed(2)})\n`;
-           if (item.notes) waText += `  _Notes:\n${item.notes}_\n`;
         });
         waText += `\n*Subtotal:* RM ${cartSubtotal.toFixed(2)}\n`;
         if(discountAmount > 0) waText += `*Diskaun:* -RM ${discountAmount.toFixed(2)}\n`;
@@ -673,9 +615,7 @@ export default function App() {
         
         setTimeout(() => { try { window.open(waLink, '_blank'); } catch(err) {} }, 100);
         setCart([]); setView('success'); window.scrollTo(0,0);
-      } catch (error) {
-        alert(`Failed to place order!\nError: ${error.message}`);
-      }
+      } catch (error) { alert(`Failed to place order!\nError: ${error.message}`); }
       setIsSubmitting(false);
     };
 
@@ -701,7 +641,6 @@ export default function App() {
               <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Full Address *</label><textarea required name="address" rows="3" defaultValue={userProfile?.address || ''} className="w-full border border-slate-200 rounded p-2 text-sm outline-none"></textarea></div>
             </div>
             
-            {/* KOTAK PROMO CODE */}
             <div className="mt-8 border-t border-slate-100 pt-5">
                <h2 className="text-xs font-bold text-slate-800 mb-2 flex items-center gap-1.5"><Icons.Ticket /> Ada Kod Promo?</h2>
                <div className="flex gap-2">
@@ -710,7 +649,6 @@ export default function App() {
                </div>
                {appliedPromo && <p className="text-green-600 text-[10px] font-bold mt-1.5">Kod '{appliedPromo.code}' berjaya digunakan!</p>}
             </div>
-
           </div>
           <div className="lg:w-[350px]">
             <div className="bg-slate-900 p-5 rounded-2xl text-white sticky top-20 border border-slate-800 shadow-md">
@@ -718,12 +656,7 @@ export default function App() {
               <div className="space-y-2 mb-4 text-xs text-slate-400">
                 <div className="flex justify-between"><span>Subtotal</span><span>RM {cartSubtotal.toFixed(2)}</span></div>
                 <div className="flex justify-between"><span>Weight</span><span>{(cartTotalWeight / 1000).toFixed(2)} KG</span></div>
-                
-                {/* PAPAR DISKAUN JIKA ADA */}
-                {discountAmount > 0 && (
-                   <div className="flex justify-between text-green-400 font-bold"><span>Diskaun ({appliedPromo?.code})</span><span>- RM {discountAmount.toFixed(2)}</span></div>
-                )}
-                
+                {discountAmount > 0 && <div className="flex justify-between text-green-400 font-bold"><span>Diskaun ({appliedPromo?.code})</span><span>- RM {discountAmount.toFixed(2)}</span></div>}
                 <div className="flex justify-between font-bold text-blue-400"><span>Shipping ({region || '...'})</span><span>{region ? `RM ${shippingFee.toFixed(2)}` : '-'}</span></div>
               </div>
               <div className="flex justify-between items-center mb-5 pb-5 border-b border-slate-800">
@@ -738,11 +671,7 @@ export default function App() {
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wide">Upload Receipt *</label>
                 <input required type="file" name="receipt" accept="image/*,application/pdf" className="w-full border border-slate-700 rounded p-1.5 bg-slate-800 text-[10px] text-slate-300 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-blue-600 file:text-white" />
               </div>
-
-              <div className="mb-4 flex justify-center">
-                <ReCAPTCHA sitekey={RECAPTCHA_SITE_KEY} onChange={(value) => setCaptchaValue(value)} theme="dark" />
-              </div>
-
+              <div className="mb-4 flex justify-center"><ReCAPTCHA sitekey={RECAPTCHA_SITE_KEY} onChange={(value) => setCaptchaValue(value)} theme="dark" /></div>
               <button disabled={isSubmitting || region === '' || !captchaValue} type="submit" className={`w-full py-3 rounded-md font-bold text-xs uppercase tracking-wide flex justify-center items-center gap-2 ${(region !== '' && captchaValue) ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}>
                 {isSubmitting ? 'Processing...' : `Confirm Order`}
               </button>
@@ -769,23 +698,16 @@ export default function App() {
        e.preventDefault();
        setSaving(true);
        const formData = new FormData(e.target);
-       const data = {
-          phone: formData.get('phone'),
-          address: formData.get('address'),
-          region: formData.get('region')
-       };
+       const data = { phone: formData.get('phone'), address: formData.get('address'), region: formData.get('region') };
        try {
          await setDoc(doc(db, "users", user.uid), data, { merge: true });
          setProfileData(data);
          alert('Profil berjaya disimpan! Maklumat ini akan diisi secara automatik semasa Checkout.');
-       } catch (err) {
-         alert("Ralat menyimpan profil: " + err.message);
-       }
+       } catch (err) {}
        setSaving(false);
     };
 
     if(!user) return null;
-
     return (
        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
           <h1 className="text-2xl font-black mb-6 text-slate-900">My Profile</h1>
@@ -808,19 +730,14 @@ export default function App() {
                </div>
              </div>
              <div><label className="block text-xs font-bold text-slate-700 mb-1">Alamat Penuh Penghantaran</label><textarea name="address" defaultValue={profileData.address} rows="3" placeholder="No Rumah, Jalan, Poskod, Daerah, Negeri" className="w-full border border-slate-200 rounded-lg p-3 outline-none focus:border-blue-500"></textarea></div>
-             <button disabled={saving} type="submit" className={`w-full text-white py-3.5 rounded-lg font-bold text-sm shadow-md transition-colors ${saving ? 'bg-slate-400' : 'bg-blue-600 hover:bg-blue-700'}`}>
-                {saving ? 'Menyimpan...' : 'Simpan Tetapan Profil'}
-             </button>
+             <button disabled={saving} type="submit" className={`w-full text-white py-3.5 rounded-lg font-bold text-sm shadow-md transition-colors ${saving ? 'bg-slate-400' : 'bg-blue-600 hover:bg-blue-700'}`}>Simpan Tetapan Profil</button>
           </form>
        </div>
     );
   };
 
-  // ==========================================
-  // VIEW MY ORDERS (DITAMBAH FUNGSI REVIEW)
-  // ==========================================
   const MyOrdersView = () => {
-    const [reviewModalOpen, setReviewModalOpen] = useState(null); // Menyimpan objek item untuk di-review
+    const [reviewModalOpen, setReviewModalOpen] = useState(null); 
     const [starRating, setStarRating] = useState(5);
     const [reviewComment, setReviewComment] = useState('');
 
@@ -829,18 +746,10 @@ export default function App() {
     const submitReview = async () => {
        try {
           await addDoc(collection(db, "reviews"), {
-             productId: reviewModalOpen.id,
-             productName: reviewModalOpen.name,
-             userId: user.uid,
-             userName: user.name,
-             rating: starRating,
-             comment: reviewComment,
-             date: new Date().toISOString()
+             productId: reviewModalOpen.id, productName: reviewModalOpen.name, userId: user.uid, userName: user.name, rating: starRating, comment: reviewComment, date: new Date().toISOString()
           });
           alert("Terima kasih atas ulasan anda!");
-          setReviewModalOpen(null);
-          setStarRating(5);
-          setReviewComment('');
+          setReviewModalOpen(null); setStarRating(5); setReviewComment('');
        } catch (err) { alert("Ralat: " + err.message); }
     };
 
@@ -854,14 +763,11 @@ export default function App() {
           <div className="flex justify-between items-center relative px-2">
             <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-1 bg-slate-200 z-0 rounded-full"></div>
             <div className="absolute left-4 top-1/2 -translate-y-1/2 h-1 bg-blue-500 z-0 transition-all duration-500 rounded-full" style={{ width: `calc(${(currentIndex / 5) * 100}% - 32px)` }}></div>
-            
             {steps.map((step, idx) => {
               const isActive = idx <= currentIndex;
               return (
                 <div key={step} className="relative z-10 flex flex-col items-center gap-2">
-                  <div className={`w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center border-2 text-[9px] md:text-[10px] font-bold transition-colors ${isActive ? 'bg-blue-500 border-blue-500 text-white shadow-md' : 'bg-white border-slate-300 text-slate-400'}`}>
-                    {isActive ? '✓' : idx + 1}
-                  </div>
+                  <div className={`w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center border-2 text-[9px] md:text-[10px] font-bold transition-colors ${isActive ? 'bg-blue-500 border-blue-500 text-white shadow-md' : 'bg-white border-slate-300 text-slate-400'}`}>{isActive ? '✓' : idx + 1}</div>
                   <span className={`absolute top-7 md:top-8 text-[8px] md:text-[9px] font-bold whitespace-nowrap ${isActive ? 'text-blue-600' : 'text-slate-400'}`}>{labels[idx]}</span>
                 </div>
               );
@@ -901,8 +807,6 @@ export default function App() {
                          <span className="font-black text-blue-600 w-5">{item.quantity}x</span>
                          <span className="font-medium">{item.name}</span>
                       </div>
-                      
-                      {/* BUTANG REVIEW JIKA DAH COMPLETED */}
                       {order.status === 'COMPLETED' && (
                          <button onClick={() => setReviewModalOpen(item)} className="text-[10px] bg-amber-100 text-amber-700 hover:bg-amber-200 px-3 py-1 rounded font-bold w-fit ml-7 sm:ml-0 transition-colors">Beri Ulasan ⭐</button>
                       )}
@@ -917,13 +821,9 @@ export default function App() {
                       <div className="flex items-center gap-1.5 text-xs">
                         <Icons.Truck />
                         <span className="font-bold text-slate-900">Tracking: <span className="text-blue-600">{order.trackingNumber}</span></span>
-                        {order.deliveryProofUrl && (
-                          <a href={order.deliveryProofUrl} target="_blank" rel="noopener noreferrer" className="ml-1 text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold hover:bg-blue-200">Lihat Bukti</a>
-                        )}
+                        {order.deliveryProofUrl && <a href={order.deliveryProofUrl} target="_blank" rel="noopener noreferrer" className="ml-1 text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold hover:bg-blue-200">Lihat Bukti</a>}
                       </div>
-                    ) : (
-                      <p className="text-[10px] font-medium text-slate-500 italic">Pesanan sedang diuruskan...</p>
-                    )}
+                    ) : <p className="text-[10px] font-medium text-slate-500 italic">Pesanan sedang diuruskan...</p>}
                   </div>
                   <div className="text-right w-full md:w-auto">
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Total Bayaran</p>
@@ -935,23 +835,17 @@ export default function App() {
           </div>
         )}
 
-        {/* MODAL REVIEW */}
         {reviewModalOpen && (
            <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
               <div className="bg-white rounded-xl w-full max-w-sm flex flex-col shadow-2xl overflow-hidden p-6">
                  <h2 className="font-black text-lg text-slate-900 mb-1">Beri Ulasan</h2>
                  <p className="text-xs text-slate-500 mb-5">{reviewModalOpen.name}</p>
-                 
                  <div className="flex gap-2 justify-center mb-6">
                     {[1,2,3,4,5].map(star => (
-                       <button key={star} onClick={() => setStarRating(star)} className="focus:outline-none transform hover:scale-110 transition-transform">
-                          <Icons.Star filled={star <= starRating} />
-                       </button>
+                       <button key={star} onClick={() => setStarRating(star)} className="focus:outline-none transform hover:scale-110 transition-transform"><Icons.Star filled={star <= starRating} /></button>
                     ))}
                  </div>
-                 
                  <textarea value={reviewComment} onChange={e=>setReviewComment(e.target.value)} rows="3" placeholder="Kongsi pengalaman anda dengan produk ini..." className="w-full border border-slate-200 rounded p-3 text-sm outline-none focus:border-blue-500 mb-5"></textarea>
-                 
                  <div className="flex gap-2">
                     <button onClick={submitReview} className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded text-sm hover:bg-blue-700 transition-colors">Hantar</button>
                     <button onClick={() => setReviewModalOpen(null)} className="flex-1 bg-slate-100 text-slate-600 font-bold py-2.5 rounded text-sm hover:bg-slate-200 transition-colors">Batal</button>
@@ -959,7 +853,6 @@ export default function App() {
               </div>
            </div>
         )}
-
       </div>
     );
   };
@@ -997,7 +890,6 @@ export default function App() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         <h1 className="text-2xl font-black text-slate-900">Dashboard Overview</h1>
-        
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-10 text-blue-600"><Icons.TrendingUp /></div>
@@ -1089,24 +981,15 @@ export default function App() {
       const updatedItems = [...viewingOrder.items];
       const item = { ...updatedItems[itemIndex] }; 
       const completedNotes = item.completedNotes || [];
-      
-      if (completedNotes.includes(lineIndex)) {
-        item.completedNotes = completedNotes.filter(i => i !== lineIndex);
-      } else {
-        item.completedNotes = [...completedNotes, lineIndex];
-      }
-      
+      if (completedNotes.includes(lineIndex)) item.completedNotes = completedNotes.filter(i => i !== lineIndex);
+      else item.completedNotes = [...completedNotes, lineIndex];
       updatedItems[itemIndex] = item;
       setViewingOrder({ ...viewingOrder, items: updatedItems });
     };
 
     const closeAndSaveModal = async () => {
       if (viewingOrder) {
-        try {
-          await updateDoc(doc(db, "orders", viewingOrder.id), { items: viewingOrder.items });
-        } catch(err) {
-          console.error("Gagal simpan checklist", err);
-        }
+        try { await updateDoc(doc(db, "orders", viewingOrder.id), { items: viewingOrder.items }); } catch(err) {}
         setViewingOrder(null); 
       }
     };
@@ -1178,32 +1061,15 @@ export default function App() {
                   <tr><th className="p-3 pl-5">Order Info</th><th className="p-3">Customer</th><th className="p-3">Items</th><th className="p-3">Delivery Proof</th><th className="p-3">Actions</th></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
-                  {filteredOrders.length === 0 && (
-                    <tr><td colSpan="5" className="p-8 text-center text-slate-500">Tiada pesanan untuk status ini.</td></tr>
-                  )}
+                  {filteredOrders.length === 0 && <tr><td colSpan="5" className="p-8 text-center text-slate-500">Tiada pesanan.</td></tr>}
                   {filteredOrders.map((order) => {
-                    let statusBorderClass = '';
-                    let selectColorClass = '';
-                    
-                    if (order.status === 'PENDING') {
-                      statusBorderClass = 'border-l-4 border-l-red-500';
-                      selectColorClass = 'bg-red-50 text-red-700 border-red-200';
-                    } else if (order.status === 'PROCESSING') {
-                      statusBorderClass = 'border-l-4 border-l-amber-500';
-                      selectColorClass = 'bg-amber-50 text-amber-700 border-amber-200';
-                    } else if (order.status === 'FINISHING') {
-                      statusBorderClass = 'border-l-4 border-l-teal-500';
-                      selectColorClass = 'bg-teal-50 text-teal-700 border-teal-200';
-                    } else if (order.status === 'PACKING') {
-                      statusBorderClass = 'border-l-4 border-l-indigo-500';
-                      selectColorClass = 'bg-indigo-50 text-indigo-700 border-indigo-200';
-                    } else if (order.status === 'POSTED') {
-                      statusBorderClass = 'border-l-4 border-l-blue-500';
-                      selectColorClass = 'bg-blue-50 text-blue-700 border-blue-200';
-                    } else if (order.status === 'COMPLETED') {
-                      statusBorderClass = 'border-l-4 border-l-green-500';
-                      selectColorClass = 'bg-green-50 text-green-700 border-green-200';
-                    }
+                    let statusBorderClass = ''; let selectColorClass = '';
+                    if (order.status === 'PENDING') { statusBorderClass = 'border-l-4 border-l-red-500'; selectColorClass = 'bg-red-50 text-red-700 border-red-200'; } 
+                    else if (order.status === 'PROCESSING') { statusBorderClass = 'border-l-4 border-l-amber-500'; selectColorClass = 'bg-amber-50 text-amber-700 border-amber-200'; } 
+                    else if (order.status === 'FINISHING') { statusBorderClass = 'border-l-4 border-l-teal-500'; selectColorClass = 'bg-teal-50 text-teal-700 border-teal-200'; } 
+                    else if (order.status === 'PACKING') { statusBorderClass = 'border-l-4 border-l-indigo-500'; selectColorClass = 'bg-indigo-50 text-indigo-700 border-indigo-200'; } 
+                    else if (order.status === 'POSTED') { statusBorderClass = 'border-l-4 border-l-blue-500'; selectColorClass = 'bg-blue-50 text-blue-700 border-blue-200'; } 
+                    else if (order.status === 'COMPLETED') { statusBorderClass = 'border-l-4 border-l-green-500'; selectColorClass = 'bg-green-50 text-green-700 border-green-200'; }
 
                     return (
                       <tr key={order.id} className={`${statusBorderClass} hover:bg-slate-50 transition-colors`}>
@@ -1216,10 +1082,7 @@ export default function App() {
                           <p className="font-bold text-slate-900">{order.customerName}</p>
                           <p className="text-[10px] text-slate-500">{order.phone}</p>
                           <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{order.region}</p>
-                          
-                          <button onClick={() => handleCopyDetails(order)} className="mt-2 text-[9px] bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-2 py-1 rounded flex items-center gap-1 transition-colors w-max font-bold">
-                            <Icons.Copy /> Salin Maklumat Pos
-                          </button>
+                          <button onClick={() => handleCopyDetails(order)} className="mt-2 text-[9px] bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-2 py-1 rounded flex items-center gap-1 transition-colors w-max font-bold"><Icons.Copy /> Salin Maklumat</button>
                         </td>
                         <td className="p-3 align-top">
                           <ul className="space-y-0.5 mb-1.5">
@@ -1228,9 +1091,7 @@ export default function App() {
                             ))}
                           </ul>
                           <p className="font-black text-blue-600 text-xs">RM {order.total.toFixed(2)}</p>
-                          <button onClick={() => setViewingOrder(order)} className="mt-2 text-[9px] font-bold bg-blue-50 text-blue-600 border border-blue-100 px-2 py-1 rounded w-full hover:bg-blue-100 transition-colors">
-                            Lihat Detail & Nota
-                          </button>
+                          <button onClick={() => setViewingOrder(order)} className="mt-2 text-[9px] font-bold bg-blue-50 text-blue-600 border border-blue-100 px-2 py-1 rounded w-full hover:bg-blue-100 transition-colors">Lihat Detail & Nota</button>
                         </td>
                         
                         <td className="p-3 align-top">
@@ -1246,10 +1107,7 @@ export default function App() {
                           ) : (
                             <div>
                               {order.trackingNumber ? (
-                                <>
-                                  <p className="text-[10px] font-bold text-slate-800 mb-0.5">{order.trackingNumber}</p>
-                                  {order.deliveryProofUrl && <a href={order.deliveryProofUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold mb-1 inline-block">View</a>}
-                                </>
+                                <><p className="text-[10px] font-bold text-slate-800 mb-0.5">{order.trackingNumber}</p>{order.deliveryProofUrl && <a href={order.deliveryProofUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold mb-1 inline-block">View</a>}</>
                               ) : <p className="text-[9px] text-slate-400 italic mb-1">Not shipped</p>}
                               <button onClick={()=>setEditingDelivery(order.id)} className="text-[9px] bg-white border border-slate-200 px-1.5 py-0.5 rounded font-bold text-slate-600 hover:bg-slate-50"><Icons.Truck /> Update</button>
                             </div>
@@ -1305,7 +1163,6 @@ export default function App() {
                     <div className="space-y-3">
                       {viewingOrder.items?.map((item, itemIdx) => {
                         const lines = item.notes ? item.notes.split('\n') : [];
-
                         return (
                           <div key={itemIdx} className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
                             <div className="flex justify-between items-start mb-2 border-b border-slate-50 pb-2">
@@ -1314,35 +1171,23 @@ export default function App() {
                               </p>
                               <p className="font-black text-slate-900 text-sm">RM {(item.price * item.quantity).toFixed(2)}</p>
                             </div>
-                            
                             {item.notes ? (
                               <div className="bg-amber-50 border border-amber-200 p-3 rounded text-xs text-amber-900">
                                 <span className="font-black uppercase tracking-wider block mb-2 text-[10px] text-amber-700 border-b border-amber-200/50 pb-1">💬 Nota Checklist Pelanggan:</span> 
                                 <div className="space-y-2 mt-1.5">
                                   {lines.map((line, lineIdx) => {
                                     if (!line.trim()) return null; 
-                                    
                                     const isChecked = item.completedNotes?.includes(lineIdx);
-                                    
                                     return (
                                       <label key={lineIdx} className="flex items-start gap-2.5 cursor-pointer group">
-                                        <input 
-                                          type="checkbox" 
-                                          checked={!!isChecked} 
-                                          onChange={() => toggleNoteTask(itemIdx, lineIdx)}
-                                          className="mt-0.5 w-4 h-4 rounded border-amber-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                                        />
-                                        <span className={`font-medium transition-colors ${isChecked ? 'line-through text-amber-900/40' : 'text-amber-900'}`}>
-                                          {line}
-                                        </span>
+                                        <input type="checkbox" checked={!!isChecked} onChange={() => toggleNoteTask(itemIdx, lineIdx)} className="mt-0.5 w-4 h-4 rounded border-amber-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                                        <span className={`font-medium transition-colors ${isChecked ? 'line-through text-amber-900/40' : 'text-amber-900'}`}>{line}</span>
                                       </label>
                                     );
                                   })}
                                 </div>
                               </div>
-                            ) : (
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Tiada nota tambahan</p>
-                            )}
+                            ) : <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Tiada nota tambahan</p>}
                           </div>
                         );
                       })}
@@ -1432,26 +1277,15 @@ export default function App() {
       setIsAdding(true);
       const formData = new FormData(e.target);
       const productData = {
-        name: formData.get('name'),
-        category: formData.get('category'),
-        price: parseFloat(formData.get('price')),
+        name: formData.get('name'), category: formData.get('category'), price: parseFloat(formData.get('price')),
         originalPrice: formData.get('originalPrice') ? parseFloat(formData.get('originalPrice')) : null,
-        stock: parseInt(formData.get('stock')),
-        weight: parseInt(formData.get('weight')) || 100, 
-        description: formData.get('description'),
-        image: formData.get('image') || 'https://placehold.co/400x400?text=No+Image',
-        dateAdded: new Date().toISOString()
+        stock: parseInt(formData.get('stock')), weight: parseInt(formData.get('weight')) || 100, 
+        description: formData.get('description'), image: formData.get('image') || 'https://placehold.co/400x400?text=No+Image', dateAdded: new Date().toISOString()
       };
       
       try {
-        if (editingProduct) {
-          await updateDoc(doc(db, "products", editingProduct.id), productData);
-          alert("Product Updated!");
-          setEditingProduct(null);
-        } else {
-          await addDoc(collection(db, "products"), productData);
-          alert("Product Added!");
-        }
+        if (editingProduct) { await updateDoc(doc(db, "products", editingProduct.id), productData); alert("Product Updated!"); setEditingProduct(null); } 
+        else { await addDoc(collection(db, "products"), productData); alert("Product Added!"); }
         e.target.reset();
       } catch (error) { alert("Failed: " + error.message); }
       setIsAdding(false);
@@ -1469,15 +1303,9 @@ export default function App() {
         <h1 className="text-xl font-black text-slate-900 mb-5">Manage Products</h1>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 bg-white p-5 rounded-xl border border-slate-200 h-fit shadow-sm">
-              <h2 className="font-bold text-sm mb-4 text-slate-800">
-                {editingProduct ? 'Edit Product' : 'Add New Product'}
-              </h2>
-              
+              <h2 className="font-bold text-sm mb-4 text-slate-800">{editingProduct ? 'Edit Product' : 'Add New Product'}</h2>
               <form key={editingProduct ? editingProduct.id : 'new'} onSubmit={handleAddOrUpdateProduct} className="space-y-3">
-                <div>
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Item Name</label>
-                  <input required name="name" defaultValue={editingProduct?.name || ''} className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" />
-                </div>
+                <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Item Name</label><input required name="name" defaultValue={editingProduct?.name || ''} className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" /></div>
                 <div>
                   <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Category</label>
                   <select name="category" defaultValue={editingProduct?.category || MOCK_CATEGORIES[0]} className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none">
@@ -1485,46 +1313,21 @@ export default function App() {
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-red-50 p-1.5 rounded border border-red-100">
-                    <label className="text-[9px] font-bold text-red-500 uppercase tracking-widest">Harga Jual (Selepas Diskaun)</label>
-                    <input required type="number" step="0.01" name="price" defaultValue={editingProduct?.price || ''} className="w-full border border-red-200 rounded p-1.5 text-xs outline-none" />
-                  </div>
-                  <div className="bg-slate-50 p-1.5 rounded border border-slate-100">
-                    <label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Harga Asal (Harga Potong)</label>
-                    <input type="number" step="0.01" name="originalPrice" defaultValue={editingProduct?.originalPrice || ''} placeholder="Kosongkan jika tiada" className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" />
-                  </div>
+                  <div className="bg-red-50 p-1.5 rounded border border-red-100"><label className="text-[9px] font-bold text-red-500 uppercase tracking-widest">Harga Jual</label><input required type="number" step="0.01" name="price" defaultValue={editingProduct?.price || ''} className="w-full border border-red-200 rounded p-1.5 text-xs outline-none" /></div>
+                  <div className="bg-slate-50 p-1.5 rounded border border-slate-100"><label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Harga Asal</label><input type="number" step="0.01" name="originalPrice" defaultValue={editingProduct?.originalPrice || ''} placeholder="Kosongkan jika tiada" className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Stock</label>
-                    <input required type="number" name="stock" defaultValue={editingProduct?.stock || ''} className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" />
-                  </div>
-                  <div>
-                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Weight (g)</label>
-                    <input required type="number" name="weight" placeholder="100" defaultValue={editingProduct?.weight || 100} className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" />
-                  </div>
+                  <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Stock</label><input required type="number" name="stock" defaultValue={editingProduct?.stock || ''} className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" /></div>
+                  <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Weight (g)</label><input required type="number" name="weight" placeholder="100" defaultValue={editingProduct?.weight || 100} className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" /></div>
                 </div>
-                <div>
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Image URL</label>
-                  <input required name="image" defaultValue={editingProduct?.image || ''} placeholder="https://..." className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" />
-                </div>
-                <div>
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Description</label>
-                  <textarea required name="description" defaultValue={editingProduct?.description || ''} rows="2" className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none"></textarea>
-                </div>
+                <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Image URL</label><input required name="image" defaultValue={editingProduct?.image || ''} placeholder="https://..." className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" /></div>
+                <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Description</label><textarea required name="description" defaultValue={editingProduct?.description || ''} rows="2" className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none"></textarea></div>
                 <div className="flex gap-2 pt-1">
-                  <button disabled={isAdding} type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded text-xs transition-colors">
-                    {isAdding ? 'Saving...' : (editingProduct ? 'Update' : 'Save')}
-                  </button>
-                  {editingProduct && (
-                    <button type="button" onClick={() => setEditingProduct(null)} className="flex-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-bold py-2 rounded text-xs transition-colors">
-                      Cancel
-                    </button>
-                  )}
+                  <button disabled={isAdding} type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded text-xs transition-colors">{isAdding ? 'Saving...' : (editingProduct ? 'Update' : 'Save')}</button>
+                  {editingProduct && <button type="button" onClick={() => setEditingProduct(null)} className="flex-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-bold py-2 rounded text-xs transition-colors">Cancel</button>}
                 </div>
               </form>
             </div>
-            
             <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[9px] tracking-wider border-b border-slate-100">
@@ -1535,23 +1338,14 @@ export default function App() {
                     <tr key={p.id} className="hover:bg-slate-50 transition-colors">
                       <td className="p-3 flex items-center gap-2">
                         <img src={p.image} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} className="w-8 h-8 rounded object-cover bg-slate-50 border border-slate-100" />
-                        <div>
-                          <p className="font-bold text-slate-900 line-clamp-1">{p.name}</p>
-                          <p className="text-[9px] font-bold uppercase text-slate-400">{p.category}</p>
-                        </div>
+                        <div><p className="font-bold text-slate-900 line-clamp-1">{p.name}</p><p className="text-[9px] font-bold uppercase text-slate-400">{p.category}</p></div>
                       </td>
                       <td className="p-3">
                         <span className="font-bold text-blue-600 block">RM {p.price.toFixed(2)}</span>
-                        {p.originalPrice && p.originalPrice > p.price && (
-                          <span className="text-[9px] text-slate-400 line-through block">RM {p.originalPrice.toFixed(2)}</span>
-                        )}
+                        {p.originalPrice && p.originalPrice > p.price && <span className="text-[9px] text-slate-400 line-through block">RM {p.originalPrice.toFixed(2)}</span>}
                         <span className="text-[10px] text-slate-500">{p.weight || 100}g</span>
                       </td>
-                      <td className="p-3">
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${p.stock > 10 ? 'bg-green-100 text-green-700' : p.stock > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                          {p.stock}
-                        </span>
-                      </td>
+                      <td className="p-3"><span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${p.stock > 10 ? 'bg-green-100 text-green-700' : p.stock > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>{p.stock}</span></td>
                       <td className="p-3">
                         <div className="flex gap-1 w-16">
                           <button onClick={() => setEditingProduct(p)} className="flex-1 bg-white hover:bg-slate-100 border border-slate-200 text-slate-500 p-1 rounded transition-colors"><Icons.Edit /></button>
@@ -1568,9 +1362,6 @@ export default function App() {
     );
   }
 
-  // ==========================================
-  // VIEW BAHARU: ADMIN PROMO CODES
-  // ==========================================
   const AdminPromosView = () => {
     const [isAdding, setIsAdding] = useState(false);
 
@@ -1579,26 +1370,11 @@ export default function App() {
        setIsAdding(true);
        const formData = new FormData(e.target);
        const codeStr = formData.get('code').toUpperCase();
-       
-       // Cek kalau code dah wujud
-       if (promos.find(p => p.code === codeStr)) {
-          alert("Kod ini sudah wujud!");
-          setIsAdding(false);
-          return;
-       }
+       if (promos.find(p => p.code === codeStr)) { alert("Kod ini sudah wujud!"); setIsAdding(false); return; }
 
-       const promoData = {
-          code: codeStr,
-          type: formData.get('type'), // 'fixed' or 'percentage'
-          value: parseFloat(formData.get('value')),
-          isActive: true
-       };
+       const promoData = { code: codeStr, type: formData.get('type'), value: parseFloat(formData.get('value')), isActive: true };
 
-       try {
-          await addDoc(collection(db, "promo_codes"), promoData);
-          alert("Kod Promo Berjaya Ditambah!");
-          e.target.reset();
-       } catch (err) { alert(err.message); }
+       try { await addDoc(collection(db, "promo_codes"), promoData); alert("Kod Promo Berjaya Ditambah!"); e.target.reset(); } catch (err) { alert(err.message); }
        setIsAdding(false);
     };
 
@@ -1617,10 +1393,7 @@ export default function App() {
              <div className="lg:col-span-1 bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-fit">
                 <h2 className="font-bold text-sm mb-4 text-slate-800">Cipta Kod Promo Baharu</h2>
                 <form onSubmit={handleAddPromo} className="space-y-3">
-                   <div>
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">KOD PROMO</label>
-                      <input required name="code" placeholder="Cth: MERDEKA10" className="w-full border border-slate-200 rounded p-2 text-xs outline-none uppercase" />
-                   </div>
+                   <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">KOD PROMO</label><input required name="code" placeholder="Cth: MERDEKA10" className="w-full border border-slate-200 rounded p-2 text-xs outline-none uppercase" /></div>
                    <div>
                       <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Jenis Diskaun</label>
                       <select name="type" className="w-full border border-slate-200 rounded p-2 text-xs outline-none">
@@ -1628,13 +1401,8 @@ export default function App() {
                          <option value="percentage">% (Tolak Peratusan)</option>
                       </select>
                    </div>
-                   <div>
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Nilai Diskaun</label>
-                      <input required type="number" step="0.01" name="value" placeholder="Cth: 10" className="w-full border border-slate-200 rounded p-2 text-xs outline-none" />
-                   </div>
-                   <button disabled={isAdding} type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded text-xs transition-colors mt-2">
-                      {isAdding ? 'Menyimpan...' : 'Cipta Kod'}
-                   </button>
+                   <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Nilai Diskaun</label><input required type="number" step="0.01" name="value" placeholder="Cth: 10" className="w-full border border-slate-200 rounded p-2 text-xs outline-none" /></div>
+                   <button disabled={isAdding} type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded text-xs transition-colors mt-2">{isAdding ? 'Menyimpan...' : 'Cipta Kod'}</button>
                 </form>
              </div>
 
@@ -1648,17 +1416,9 @@ export default function App() {
                       {promos.map(promo => (
                          <tr key={promo.id}>
                             <td className="p-3 pl-5 font-black text-blue-600">{promo.code}</td>
-                            <td className="p-3 font-bold text-slate-700">
-                               {promo.type === 'percentage' ? `${promo.value}%` : `RM ${promo.value.toFixed(2)}`}
-                            </td>
-                            <td className="p-3">
-                               <button onClick={() => togglePromoStatus(promo.id, promo.isActive)} className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest ${promo.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-                                  {promo.isActive ? 'Aktif' : 'Tutup'}
-                               </button>
-                            </td>
-                            <td className="p-3">
-                               <button onClick={() => deletePromo(promo.id)} className="text-red-500 bg-red-50 p-1.5 rounded hover:bg-red-100 transition-colors"><Icons.Trash /></button>
-                            </td>
+                            <td className="p-3 font-bold text-slate-700">{promo.type === 'percentage' ? `${promo.value}%` : `RM ${promo.value.toFixed(2)}`}</td>
+                            <td className="p-3"><button onClick={() => togglePromoStatus(promo.id, promo.isActive)} className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest ${promo.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>{promo.isActive ? 'Aktif' : 'Tutup'}</button></td>
+                            <td className="p-3"><button onClick={() => deletePromo(promo.id)} className="text-red-500 bg-red-50 p-1.5 rounded hover:bg-red-100 transition-colors"><Icons.Trash /></button></td>
                          </tr>
                       ))}
                    </tbody>
@@ -1669,9 +1429,6 @@ export default function App() {
     );
   };
 
-  // ==========================================
-  // VIEW RESIT: NAIK TARAF KEPADA INVOIS A4
-  // ==========================================
   const ReceiptView = () => {
     if (!selectedOrder) return null;
     return (
@@ -1682,7 +1439,6 @@ export default function App() {
             <button onClick={() => window.print()} className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 transition-colors shadow-md"><Icons.Printer /> Cetak / Save PDF</button>
           </div>
           
-          {/* KERTAS A4 INVOIS */}
           <div className="bg-white p-10 md:p-14 border border-slate-200 print:border-none shadow-lg print:shadow-none min-h-[297mm]">
             <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6 mb-8">
               <div>
@@ -1743,7 +1499,6 @@ export default function App() {
               <div className="w-64 space-y-2 text-xs">
                 <div className="flex justify-between text-slate-500 font-medium px-2"><span>Subtotal:</span><span>RM {selectedOrder.subtotal?.toFixed(2)}</span></div>
                 
-                {/* PAPAR DISKAUN JIKA ADA */}
                 {selectedOrder.discountAmount > 0 && (
                    <div className="flex justify-between text-green-600 font-bold px-2"><span>Diskaun ({selectedOrder.promoCodeUsed}):</span><span>- RM {selectedOrder.discountAmount?.toFixed(2)}</span></div>
                 )}
