@@ -850,28 +850,33 @@ export default function App() {
     </div>
   );
 
+  // ==========================================
+  // VIEW PELANGGAN: MY ORDERS (KEMAS KINI 6 TAHAP)
+  // ==========================================
   const MyOrdersView = () => {
     if (!user || user.role === 'admin') return null;
 
     const OrderTimeline = ({ status }) => {
-      const steps = ['PENDING', 'PROCESSING', 'POSTED', 'COMPLETED'];
-      const labels = ['Dibayar', 'Diproses', 'Dipos', 'Selesai'];
+      // DITAMBAH 'FINISHING' DAN 'PACKING'
+      const steps = ['PENDING', 'PROCESSING', 'FINISHING', 'PACKING', 'POSTED', 'COMPLETED'];
+      const labels = ['Dibayar', '3D Print', 'Kemasan', 'Packing', 'Dipos', 'Selesai'];
       const currentIndex = steps.indexOf(status);
 
       return (
         <div className="w-full pt-4 pb-6 mt-2 mb-2 border-t border-b border-slate-100">
           <div className="flex justify-between items-center relative px-2">
             <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-1 bg-slate-200 z-0 rounded-full"></div>
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 h-1 bg-blue-500 z-0 transition-all duration-500 rounded-full" style={{ width: `calc(${(currentIndex / 3) * 100}% - 32px)` }}></div>
+            {/* Dikira berdasarkan 5 step (0 hingga 5) */}
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 h-1 bg-blue-500 z-0 transition-all duration-500 rounded-full" style={{ width: `calc(${(currentIndex / 5) * 100}% - 32px)` }}></div>
             
             {steps.map((step, idx) => {
               const isActive = idx <= currentIndex;
               return (
                 <div key={step} className="relative z-10 flex flex-col items-center gap-2">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 text-[10px] font-bold transition-colors ${isActive ? 'bg-blue-500 border-blue-500 text-white shadow-md' : 'bg-white border-slate-300 text-slate-400'}`}>
+                  <div className={`w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center border-2 text-[9px] md:text-[10px] font-bold transition-colors ${isActive ? 'bg-blue-500 border-blue-500 text-white shadow-md' : 'bg-white border-slate-300 text-slate-400'}`}>
                     {isActive ? '✓' : idx + 1}
                   </div>
-                  <span className={`absolute top-8 text-[9px] font-bold whitespace-nowrap ${isActive ? 'text-blue-600' : 'text-slate-400'}`}>{labels[idx]}</span>
+                  <span className={`absolute top-7 md:top-8 text-[8px] md:text-[9px] font-bold whitespace-nowrap ${isActive ? 'text-blue-600' : 'text-slate-400'}`}>{labels[idx]}</span>
                 </div>
               );
             })}
@@ -1062,12 +1067,9 @@ export default function App() {
       alert("Maklumat pelanggan berjaya disalin!");
     };
 
-    // ==============================================================
-    // FUNGSI BAHARU: KEMAS KINI CHECKLIST LOKAL (TIDAK TUTUP MODAL)
-    // ==============================================================
     const toggleNoteTask = (itemIndex, lineIndex) => {
       const updatedItems = [...viewingOrder.items];
-      const item = { ...updatedItems[itemIndex] }; // Copy item supaya tak kacau state asal
+      const item = { ...updatedItems[itemIndex] }; 
       const completedNotes = item.completedNotes || [];
       
       if (completedNotes.includes(lineIndex)) {
@@ -1077,23 +1079,17 @@ export default function App() {
       }
       
       updatedItems[itemIndex] = item;
-      
-      // Update UI Modal sahaja (Jangan hantar ke Firebase lagi)
       setViewingOrder({ ...viewingOrder, items: updatedItems });
     };
 
-    // ==============================================================
-    // FUNGSI BAHARU: SIMPAN KE FIREBASE HANYA BILA TEKAN BUTANG 'X'
-    // ==============================================================
     const closeAndSaveModal = async () => {
       if (viewingOrder) {
         try {
-          // Bila tekan X, baru hantar perubahan checklist ke Firebase
           await updateDoc(doc(db, "orders", viewingOrder.id), { items: viewingOrder.items });
         } catch(err) {
           console.error("Gagal simpan checklist", err);
         }
-        setViewingOrder(null); // Tutup Modal
+        setViewingOrder(null); 
       }
     };
 
@@ -1121,10 +1117,13 @@ export default function App() {
 
     const filteredOrders = activeTab === 'ALL' ? orders : orders.filter(o => o.status === activeTab);
 
+    // DIKEMAS KINI DENGAN TABS FINISHING DAN PACKING
     const statusCounts = {
       ALL: orders.length,
       PENDING: orders.filter(o => o.status === 'PENDING').length,
       PROCESSING: orders.filter(o => o.status === 'PROCESSING').length,
+      FINISHING: orders.filter(o => o.status === 'FINISHING').length,
+      PACKING: orders.filter(o => o.status === 'PACKING').length,
       POSTED: orders.filter(o => o.status === 'POSTED').length,
       COMPLETED: orders.filter(o => o.status === 'COMPLETED').length,
     };
@@ -1133,8 +1132,9 @@ export default function App() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 relative">
         <h1 className="text-xl font-black text-slate-900 mb-5">Manage Orders</h1>
 
+        {/* TABS MENU DENGAN 2 STATUS TAMBAHAN */}
         <div className="flex gap-2 mb-5 overflow-x-auto pb-2 scrollbar-hide">
-          {['ALL', 'PENDING', 'PROCESSING', 'POSTED', 'COMPLETED'].map(tab => (
+          {['ALL', 'PENDING', 'PROCESSING', 'FINISHING', 'PACKING', 'POSTED', 'COMPLETED'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -1142,6 +1142,8 @@ export default function App() {
                 activeTab === tab 
                   ? (tab === 'PENDING' ? 'bg-red-500 text-white border-red-500' :
                      tab === 'PROCESSING' ? 'bg-amber-500 text-white border-amber-500' :
+                     tab === 'FINISHING' ? 'bg-teal-500 text-white border-teal-500' :
+                     tab === 'PACKING' ? 'bg-indigo-500 text-white border-indigo-500' :
                      tab === 'POSTED' ? 'bg-blue-500 text-white border-blue-500' :
                      tab === 'COMPLETED' ? 'bg-green-500 text-white border-green-500' :
                      'bg-slate-800 text-white border-slate-800')
@@ -1173,6 +1175,12 @@ export default function App() {
                     } else if (order.status === 'PROCESSING') {
                       statusBorderClass = 'border-l-4 border-l-amber-500';
                       selectColorClass = 'bg-amber-50 text-amber-700 border-amber-200';
+                    } else if (order.status === 'FINISHING') {
+                      statusBorderClass = 'border-l-4 border-l-teal-500';
+                      selectColorClass = 'bg-teal-50 text-teal-700 border-teal-200';
+                    } else if (order.status === 'PACKING') {
+                      statusBorderClass = 'border-l-4 border-l-indigo-500';
+                      selectColorClass = 'bg-indigo-50 text-indigo-700 border-indigo-200';
                     } else if (order.status === 'POSTED') {
                       statusBorderClass = 'border-l-4 border-l-blue-500';
                       selectColorClass = 'bg-blue-50 text-blue-700 border-blue-200';
@@ -1236,6 +1244,8 @@ export default function App() {
                           <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value)} className={`w-28 mb-1.5 border rounded p-1.5 text-[10px] font-bold outline-none cursor-pointer ${selectColorClass}`}>
                             <option value="PENDING">PENDING</option>
                             <option value="PROCESSING">PROCESSING</option>
+                            <option value="FINISHING">FINISHING</option>
+                            <option value="PACKING">PACKING</option>
                             <option value="POSTED">POSTED</option>
                             <option value="COMPLETED">COMPLETED</option>
                           </select>
@@ -1257,7 +1267,6 @@ export default function App() {
               <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
                 <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                   <h2 className="font-black text-lg text-slate-900">Detail Pesanan: {viewingOrder.orderId}</h2>
-                  {/* BUTANG PANGKAH MEMANGGIL FUNGSI SIMPAN */}
                   <button onClick={closeAndSaveModal} className="p-1 text-slate-400 hover:bg-slate-200 hover:text-red-500 rounded"><Icons.X /></button>
                 </div>
                 
