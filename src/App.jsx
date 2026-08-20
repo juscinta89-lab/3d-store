@@ -47,7 +47,9 @@ const Icons = {
   User: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>,
   ChevronDown: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>,
   AlertCircle: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>,
-  Copy: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+  Copy: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>,
+  Star: ({ filled }) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill={filled ? "#eab308" : "none"} stroke={filled ? "#eab308" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>,
+  Ticket: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><line x1="13" y1="5" x2="13" y2="19"></line></svg>
 };
 
 const MOCK_CATEGORIES = ['3D PRINT', 'ROBOT PARTS', 'ELECTRONICS', 'STEM / EDUCATION', 'CUSTOM 3D PRINT'];
@@ -59,6 +61,7 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [customRequests, setCustomRequests] = useState([]); 
+  const [promos, setPromos] = useState([]); // State untuk Kod Promo
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null); 
   const [completedOrder, setCompletedOrder] = useState(null);
@@ -79,6 +82,7 @@ export default function App() {
     return () => unsubscribe();
   }, [view]);
 
+  // Fetch Products
   useEffect(() => {
     const q = query(collection(db, "products"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -88,6 +92,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // Fetch Orders, Requests, Promos
   useEffect(() => {
     if (user) {
       let qOrders;
@@ -96,6 +101,10 @@ export default function App() {
         const qRequests = query(collection(db, "custom_requests"), orderBy("date", "desc"));
         onSnapshot(qRequests, (snapshot) => {
           setCustomRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
+        const qPromos = query(collection(db, "promo_codes"));
+        onSnapshot(qPromos, (snapshot) => {
+          setPromos(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         });
       } else {
         qOrders = query(collection(db, "orders"), where("email", "==", user.email));
@@ -111,6 +120,7 @@ export default function App() {
     } else {
       setOrders([]);
       setCustomRequests([]);
+      setPromos([]);
     }
   }, [user]);
 
@@ -156,7 +166,7 @@ export default function App() {
       href={`https://wa.me/${WHATSAPP_NUMBER}`} 
       target="_blank" 
       rel="noopener noreferrer" 
-      className="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-2xl hover:bg-green-600 hover:scale-110 transition-all z-50 flex items-center justify-center group"
+      className="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-2xl hover:bg-green-600 hover:scale-110 transition-all z-50 flex items-center justify-center group print:hidden"
     >
       <Icons.WhatsApp />
       <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap pl-0 group-hover:pl-2 font-bold text-sm">
@@ -228,6 +238,9 @@ export default function App() {
               </button>
 
               <button onClick={() => navigateTo('admin_products')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_products' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Box /> Manage Products</button>
+              
+              {/* MENU BAHARU: MANAGE PROMOS */}
+              <button onClick={() => navigateTo('admin_promos')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_promos' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Ticket /> Manage Promos</button>
             </>
           )}
         </div>
@@ -380,20 +393,39 @@ export default function App() {
   const ProductView = () => {
     const [qty, setQty] = useState(1);
     const [notes, setNotes] = useState('');
-
+    const [productReviews, setProductReviews] = useState([]); // Reviews untuk produk ini
+    
     if (!selectedProduct) return null;
+
+    // Tarik reviews bila masuk halaman produk
+    useEffect(() => {
+      const q = query(collection(db, "reviews"), where("productId", "==", selectedProduct.id), orderBy("date", "desc"));
+      const unsub = onSnapshot(q, (snapshot) => {
+        setProductReviews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      });
+      return () => unsub();
+    }, [selectedProduct.id]);
+
+    const avgRating = productReviews.length > 0 ? (productReviews.reduce((sum, r) => sum + r.rating, 0) / productReviews.length).toFixed(1) : 0;
 
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         <button onClick={() => navigateTo('home')} className="flex items-center text-slate-500 font-bold mb-4 text-sm gap-1 w-fit hover:text-blue-600 transition-colors">
           <Icons.ArrowLeft /> Back
         </button>
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row mb-8">
           <div className="md:w-1/2 bg-slate-50 p-6 flex items-center justify-center border-b md:border-b-0 md:border-r border-slate-200">
             <img src={selectedProduct.image} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={selectedProduct.name} className="w-full max-w-xs rounded-xl object-contain drop-shadow-md" />
           </div>
           <div className="md:w-1/2 p-6 lg:p-10 flex flex-col justify-center">
-            <span className="text-blue-600 font-bold text-[10px] tracking-widest uppercase mb-1">{selectedProduct.category}</span>
+            <div className="flex justify-between items-start mb-1">
+               <span className="text-blue-600 font-bold text-[10px] tracking-widest uppercase">{selectedProduct.category}</span>
+               {productReviews.length > 0 && (
+                 <div className="flex items-center gap-1 text-xs font-bold text-slate-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
+                   <Icons.Star filled /> {avgRating} ({productReviews.length})
+                 </div>
+               )}
+            </div>
             <h1 className="text-2xl font-black text-slate-900 mb-3">{selectedProduct.name}</h1>
             <p className="text-slate-600 text-sm mb-6 leading-relaxed">{selectedProduct.description}</p>
             
@@ -432,6 +464,29 @@ export default function App() {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* SECTION ULASAN PELANGGAN */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+           <h2 className="text-lg font-black text-slate-900 mb-4">Ulasan Pelanggan ({productReviews.length})</h2>
+           {productReviews.length === 0 ? (
+             <p className="text-sm text-slate-500 italic">Belum ada ulasan untuk produk ini.</p>
+           ) : (
+             <div className="space-y-4">
+               {productReviews.map(r => (
+                 <div key={r.id} className="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="flex gap-0.5">
+                         {[1,2,3,4,5].map(star => <Icons.Star key={star} filled={star <= r.rating} />)}
+                      </div>
+                      <span className="font-bold text-xs text-slate-800">{r.userName}</span>
+                      <span className="text-[10px] text-slate-400 ml-auto">{new Date(r.date).toLocaleDateString('en-GB')}</span>
+                    </div>
+                    <p className="text-sm text-slate-600 mt-2">{r.comment}</p>
+                 </div>
+               ))}
+             </div>
+           )}
         </div>
       </div>
     );
@@ -494,6 +549,10 @@ export default function App() {
     const [region, setRegion] = useState('');
     const [captchaValue, setCaptchaValue] = useState(null); 
     const [userProfile, setUserProfile] = useState(null);
+    
+    // Promo State
+    const [promoInput, setPromoInput] = useState('');
+    const [appliedPromo, setAppliedPromo] = useState(null);
 
     useEffect(() => {
       if(user?.uid) {
@@ -507,6 +566,26 @@ export default function App() {
       }
     }, [user]);
 
+    // FUNGSI CEK PROMO
+    const handleApplyPromo = async () => {
+       if(!promoInput) return;
+       const q = query(collection(db, "promo_codes"), where("code", "==", promoInput.toUpperCase()));
+       const snap = await getDocs(q);
+       if(!snap.empty) {
+          const promoData = snap.docs[0].data();
+          if(promoData.isActive) {
+             setAppliedPromo(promoData);
+             alert("Kod Promo Berjaya Digunakan!");
+          } else {
+             alert("Maaf, kod promo ini tidak lagi aktif.");
+             setAppliedPromo(null);
+          }
+       } else {
+          alert("Maaf, kod promo tidak sah.");
+          setAppliedPromo(null);
+       }
+    };
+
     let shippingFee = 0;
     if (cartTotalWeight > 0 && region !== '') {
       const baseFee = region === 'Semenanjung' ? 8 : 15; 
@@ -517,7 +596,19 @@ export default function App() {
         shippingFee = baseFee + (extraBlocks * extraFee);
       }
     }
-    const grandTotal = cartSubtotal + shippingFee;
+
+    // KIRA DISKAUN SELEPAS PROMO
+    let discountAmount = 0;
+    if(appliedPromo) {
+       if(appliedPromo.type === 'percentage') {
+          discountAmount = cartSubtotal * (appliedPromo.value / 100);
+       } else {
+          discountAmount = appliedPromo.value;
+       }
+    }
+    
+    // Pastikan total tidak negatif
+    const grandTotal = Math.max(0, cartSubtotal - discountAmount + shippingFee);
 
     const handleCheckoutSubmit = async (e) => {
       e.preventDefault();
@@ -547,6 +638,7 @@ export default function App() {
           email: user?.email || formData.get('email') || 'Guest',
           address: formData.get('address'), region, items: cart,
           totalWeight: cartTotalWeight, subtotal: cartSubtotal,
+          discountAmount, promoCodeUsed: appliedPromo ? appliedPromo.code : null, // Simpan rekod promo
           shippingFee, total: grandTotal, receiptUrl, status: 'PENDING'
         };
         
@@ -572,7 +664,9 @@ export default function App() {
            waText += `- ${item.quantity}x ${item.name} (RM ${item.price.toFixed(2)})\n`;
            if (item.notes) waText += `  _Notes:\n${item.notes}_\n`;
         });
-        waText += `\n*Subtotal:* RM ${cartSubtotal.toFixed(2)}\n*Shipping:* RM ${shippingFee.toFixed(2)}\n*TOTAL:* RM ${grandTotal.toFixed(2)}`;
+        waText += `\n*Subtotal:* RM ${cartSubtotal.toFixed(2)}\n`;
+        if(discountAmount > 0) waText += `*Diskaun:* -RM ${discountAmount.toFixed(2)}\n`;
+        waText += `*Shipping:* RM ${shippingFee.toFixed(2)}\n*TOTAL:* RM ${grandTotal.toFixed(2)}`;
         
         const waLink = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(waText)}`;
         setCompletedOrder({ ...orderData, waLink });
@@ -606,6 +700,17 @@ export default function App() {
               </div>
               <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Full Address *</label><textarea required name="address" rows="3" defaultValue={userProfile?.address || ''} className="w-full border border-slate-200 rounded p-2 text-sm outline-none"></textarea></div>
             </div>
+            
+            {/* KOTAK PROMO CODE */}
+            <div className="mt-8 border-t border-slate-100 pt-5">
+               <h2 className="text-xs font-bold text-slate-800 mb-2 flex items-center gap-1.5"><Icons.Ticket /> Ada Kod Promo?</h2>
+               <div className="flex gap-2">
+                 <input value={promoInput} onChange={e=>setPromoInput(e.target.value)} placeholder="Masukkan kod promo" className="border border-slate-200 rounded p-2 text-sm outline-none flex-1 uppercase" />
+                 <button type="button" onClick={handleApplyPromo} className="bg-slate-800 text-white px-4 py-2 rounded text-xs font-bold hover:bg-slate-700 transition-colors">Tebus</button>
+               </div>
+               {appliedPromo && <p className="text-green-600 text-[10px] font-bold mt-1.5">Kod '{appliedPromo.code}' berjaya digunakan!</p>}
+            </div>
+
           </div>
           <div className="lg:w-[350px]">
             <div className="bg-slate-900 p-5 rounded-2xl text-white sticky top-20 border border-slate-800 shadow-md">
@@ -613,6 +718,12 @@ export default function App() {
               <div className="space-y-2 mb-4 text-xs text-slate-400">
                 <div className="flex justify-between"><span>Subtotal</span><span>RM {cartSubtotal.toFixed(2)}</span></div>
                 <div className="flex justify-between"><span>Weight</span><span>{(cartTotalWeight / 1000).toFixed(2)} KG</span></div>
+                
+                {/* PAPAR DISKAUN JIKA ADA */}
+                {discountAmount > 0 && (
+                   <div className="flex justify-between text-green-400 font-bold"><span>Diskaun ({appliedPromo?.code})</span><span>- RM {discountAmount.toFixed(2)}</span></div>
+                )}
+                
                 <div className="flex justify-between font-bold text-blue-400"><span>Shipping ({region || '...'})</span><span>{region ? `RM ${shippingFee.toFixed(2)}` : '-'}</span></div>
               </div>
               <div className="flex justify-between items-center mb-5 pb-5 border-b border-slate-800">
@@ -683,10 +794,8 @@ export default function App() {
                <div><label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Nama Akaun Google</label><input disabled value={user.name} className="w-full border border-slate-200 bg-slate-50 rounded-lg p-3 outline-none text-slate-500 font-bold" /></div>
                <div><label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Email</label><input disabled value={user.email} className="w-full border border-slate-200 bg-slate-50 rounded-lg p-3 outline-none text-slate-500 font-bold" /></div>
              </div>
-             
              <hr className="border-slate-100 my-4" />
              <p className="text-xs text-slate-500 font-medium mb-2">Maklumat di bawah akan digunakan secara automatik untuk penghantaran pesanan anda kelak.</p>
-
              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                <div><label className="block text-xs font-bold text-slate-700 mb-1">No. Telefon</label><input name="phone" defaultValue={profileData.phone} className="w-full border border-slate-200 rounded-lg p-3 outline-none focus:border-blue-500" placeholder="Contoh: 0194155722" /></div>
                <div>
@@ -698,9 +807,7 @@ export default function App() {
                   </select>
                </div>
              </div>
-             
              <div><label className="block text-xs font-bold text-slate-700 mb-1">Alamat Penuh Penghantaran</label><textarea name="address" defaultValue={profileData.address} rows="3" placeholder="No Rumah, Jalan, Poskod, Daerah, Negeri" className="w-full border border-slate-200 rounded-lg p-3 outline-none focus:border-blue-500"></textarea></div>
-             
              <button disabled={saving} type="submit" className={`w-full text-white py-3.5 rounded-lg font-bold text-sm shadow-md transition-colors ${saving ? 'bg-slate-400' : 'bg-blue-600 hover:bg-blue-700'}`}>
                 {saving ? 'Menyimpan...' : 'Simpan Tetapan Profil'}
              </button>
@@ -709,155 +816,35 @@ export default function App() {
     );
   };
 
-  const CustomPrintView = () => {
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [captchaValue, setCaptchaValue] = useState(null);
-
-    const handleCustomSubmit = async (e) => {
-      e.preventDefault();
-      if (!captchaValue) {
-        alert("Sila tandakan kotak reCAPTCHA.");
-        return;
-      }
-
-      setIsSubmitting(true);
-      const formData = new FormData(e.target);
-      const requestId = `QTE-${Date.now().toString().slice(-6)}`;
-      const file = formData.get('file');
-      let fileUrl = '';
-
-      try {
-        if (file && file.size > 0) {
-          const storageRef = ref(storage, `custom_quotes/${requestId}-${file.name}`);
-          await uploadBytes(storageRef, file);
-          fileUrl = await getDownloadURL(storageRef);
-        }
-
-        const requestData = {
-          requestId,
-          date: new Date().toISOString(),
-          customerName: formData.get('name'),
-          phone: formData.get('phone'),
-          email: formData.get('email'),
-          description: formData.get('description'),
-          fileUrl,
-          status: 'NEW'
-        };
-
-        await addDoc(collection(db, "custom_requests"), requestData);
-
-        if (TELEGRAM_BOT_TOKEN !== "LETAK_TOKEN_BOT_DI_SINI") {
-          const telegramMessage = `🛠️ *TEMPAHAN CUSTOM 3D BARU!*\n\n*ID:* \`${requestId}\`\n*Nama:* ${requestData.customerName}\n*No HP:* ${requestData.phone}\n*Detail:* ${requestData.description}`;
-          try {
-            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramMessage, parse_mode: 'Markdown' })
-            });
-          } catch (err) {}
-        }
-
-        alert("Permintaan Custom 3D Print berjaya dihantar! Kami akan hubungi anda tidak lama lagi melalui WhatsApp.");
-        navigateTo('home');
-      } catch (error) {
-        alert("Ralat menghantar borang: " + error.message);
-      }
-      setIsSubmitting(false);
-    };
-
-    return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
-        <h1 className="text-2xl font-black mb-2 text-slate-900">Custom 3D Print Request</h1>
-        <p className="text-sm text-slate-500 mb-6">Ada fail STL sendiri atau idea rekaan khas? Muat naik di sini dan kami akan berikan sebut harga (quotation) percuma!</p>
-        
-        <form onSubmit={handleCustomSubmit} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div><label className="block text-xs font-bold text-slate-700 mb-1">Nama Penuh *</label><input required name="name" defaultValue={user?.name || ''} className="w-full border border-slate-200 rounded p-2.5 outline-none" /></div>
-            <div><label className="block text-xs font-bold text-slate-700 mb-1">No. Telefon *</label><input required name="phone" className="w-full border border-slate-200 rounded p-2.5 outline-none" /></div>
-          </div>
-          <div><label className="block text-xs font-bold text-slate-700 mb-1">Email (Pilihan)</label><input type="email" name="email" defaultValue={user?.email || ''} className="w-full border border-slate-200 rounded p-2.5 outline-none" /></div>
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Keterangan / Detail Rekaan *</label>
-            <textarea required name="description" rows="4" placeholder="Cth: Saya nak print kotak untuk Arduino, warna hitam, material PETG..." className="w-full border border-slate-200 rounded p-2.5 outline-none whitespace-pre-wrap"></textarea>
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Muat Naik Fail (STL / OBJ / Gambar)</label>
-            <input type="file" name="file" accept=".stl,.obj,.png,.jpg,.jpeg,.pdf,.zip" className="w-full border border-slate-200 rounded p-2 text-sm bg-slate-50" />
-            <p className="text-[10px] text-slate-400 mt-1">Saiz maksimum: 10MB</p>
-          </div>
-
-          <div className="py-2">
-             <ReCAPTCHA sitekey={RECAPTCHA_SITE_KEY} onChange={(value) => setCaptchaValue(value)} />
-          </div>
-
-          <button disabled={isSubmitting || !captchaValue} type="submit" className={`w-full py-3.5 rounded-lg font-bold text-sm text-white transition-colors ${!captchaValue ? 'bg-slate-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-md'}`}>
-            {isSubmitting ? 'Menghantar...' : 'Hantar Permintaan (Request Quote)'}
-          </button>
-        </form>
-      </div>
-    );
-  };
-
-  const PoliciesView = () => (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-      <h1 className="text-2xl font-black text-slate-900 mb-4">Policies & FAQ</h1>
-      
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <h2 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><Icons.Truck /> Polisi Penghantaran (Shipping)</h2>
-        <ul className="list-disc pl-5 space-y-2 text-sm text-slate-600">
-          <li>Semua pesanan sedia ada (Ready Stock) akan diproses dan dipos dalam masa <strong>1-3 hari bekerja</strong>.</li>
-          <li>Untuk pesanan <em>Custom 3D Print</em>, masa memproses bergantung kepada saiz dan kuantiti cetakan (biasanya 3-7 hari).</li>
-          <li>Kami menggunakan kurier utama seperti J&T, PosLaju, dan NinjaVan.</li>
-        </ul>
-      </div>
-
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <h2 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><Icons.ShieldCheck /> Polisi Pemulangan (Returns & Refunds)</h2>
-        <ul className="list-disc pl-5 space-y-2 text-sm text-slate-600">
-          <li>Barang yang rosak semasa penghantaran boleh dituntut untuk pertukaran dalam tempoh <strong>3 hari</strong> selepas bungkusan diterima.</li>
-          <li>Sila ambil video <em>unboxing</em> sebagai bukti bagi sebarang tuntutan.</li>
-          <li>Wang tidak boleh dikembalikan untuk barang Custom Print sekiranya kesalahan berpunca daripada fail STL yang diberikan oleh pelanggan.</li>
-        </ul>
-      </div>
-
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <h2 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><Icons.MessageSquare /> Soalan Lazim (FAQ)</h2>
-        <div className="space-y-4 text-sm text-slate-600">
-          <div>
-            <p className="font-bold text-slate-800">Q: Material apa yang digunakan untuk 3D Print?</p>
-            <p>A: Secara asasnya kami menggunakan PLA+ dan PETG yang tahan lasak. Untuk material khas seperti TPU atau ABS, sila hubungi kami melalui borang Custom Print.</p>
-          </div>
-          <div>
-            <p className="font-bold text-slate-800">Q: Adakah kedai fizikal (Walk-in) disediakan?</p>
-            <p>A: Buat masa ini kami beroperasi 100% secara dalam talian. Pengambilan sendiri (Self-pickup) hanya dibenarkan jika ada perjanjian awal.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const SuccessView = () => (
-    <div className="max-w-md mx-auto px-4 py-20 text-center">
-      <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.CheckCircle /></div>
-      <h1 className="text-xl font-black text-slate-900 mb-1">Order Confirmed!</h1>
-      <p className="text-xs text-slate-500 mb-6">Your order has been recorded. Please notify the admin via WhatsApp.</p>
-      {completedOrder?.waLink && (
-        <a href={completedOrder.waLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-green-500 text-white py-3 rounded-md font-bold text-xs uppercase tracking-wide mb-2"><Icons.WhatsApp /> Send WhatsApp Message</a>
-      )}
-      <button onClick={() => navigateTo(user ? 'myorders' : 'home')} className="w-full bg-slate-900 text-white py-3 rounded-md font-bold text-xs uppercase tracking-wide mb-2">
-        {user ? 'View My Orders' : 'Back to Home'}
-      </button>
-    </div>
-  );
-
   // ==========================================
-  // VIEW PELANGGAN: MY ORDERS (KEMAS KINI 6 TAHAP)
+  // VIEW MY ORDERS (DITAMBAH FUNGSI REVIEW)
   // ==========================================
   const MyOrdersView = () => {
+    const [reviewModalOpen, setReviewModalOpen] = useState(null); // Menyimpan objek item untuk di-review
+    const [starRating, setStarRating] = useState(5);
+    const [reviewComment, setReviewComment] = useState('');
+
     if (!user || user.role === 'admin') return null;
 
+    const submitReview = async () => {
+       try {
+          await addDoc(collection(db, "reviews"), {
+             productId: reviewModalOpen.id,
+             productName: reviewModalOpen.name,
+             userId: user.uid,
+             userName: user.name,
+             rating: starRating,
+             comment: reviewComment,
+             date: new Date().toISOString()
+          });
+          alert("Terima kasih atas ulasan anda!");
+          setReviewModalOpen(null);
+          setStarRating(5);
+          setReviewComment('');
+       } catch (err) { alert("Ralat: " + err.message); }
+    };
+
     const OrderTimeline = ({ status }) => {
-      // DITAMBAH 'FINISHING' DAN 'PACKING'
       const steps = ['PENDING', 'PROCESSING', 'FINISHING', 'PACKING', 'POSTED', 'COMPLETED'];
       const labels = ['Dibayar', '3D Print', 'Kemasan', 'Packing', 'Dipos', 'Selesai'];
       const currentIndex = steps.indexOf(status);
@@ -866,7 +853,6 @@ export default function App() {
         <div className="w-full pt-4 pb-6 mt-2 mb-2 border-t border-b border-slate-100">
           <div className="flex justify-between items-center relative px-2">
             <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-1 bg-slate-200 z-0 rounded-full"></div>
-            {/* Dikira berdasarkan 5 step (0 hingga 5) */}
             <div className="absolute left-4 top-1/2 -translate-y-1/2 h-1 bg-blue-500 z-0 transition-all duration-500 rounded-full" style={{ width: `calc(${(currentIndex / 5) * 100}% - 32px)` }}></div>
             
             {steps.map((step, idx) => {
@@ -886,7 +872,7 @@ export default function App() {
     };
 
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 relative">
         <h1 className="text-xl font-black mb-5 text-slate-900">My Orders</h1>
         {orders.length === 0 ? (
           <div className="bg-white p-10 rounded-xl border border-slate-200 text-center"><p className="text-slate-500 text-sm">No orders found.</p></div>
@@ -910,9 +896,16 @@ export default function App() {
                 <div className="mb-3 mt-4">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Senarai Barang</p>
                   {order.items?.map((item, idx) => (
-                    <div key={idx} className="flex gap-2 text-xs text-slate-700 mb-1">
-                      <span className="font-black text-blue-600 w-5">{item.quantity}x</span>
-                      <span className="font-medium">{item.name}</span>
+                    <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-700 mb-2 pb-2 border-b border-slate-50">
+                      <div className="flex items-center gap-2">
+                         <span className="font-black text-blue-600 w-5">{item.quantity}x</span>
+                         <span className="font-medium">{item.name}</span>
+                      </div>
+                      
+                      {/* BUTANG REVIEW JIKA DAH COMPLETED */}
+                      {order.status === 'COMPLETED' && (
+                         <button onClick={() => setReviewModalOpen(item)} className="text-[10px] bg-amber-100 text-amber-700 hover:bg-amber-200 px-3 py-1 rounded font-bold w-fit ml-7 sm:ml-0 transition-colors">Beri Ulasan ⭐</button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -937,11 +930,36 @@ export default function App() {
                     <p className="text-base font-black text-slate-900">RM {order.total.toFixed(2)}</p>
                   </div>
                 </div>
-
               </div>
             ))}
           </div>
         )}
+
+        {/* MODAL REVIEW */}
+        {reviewModalOpen && (
+           <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-xl w-full max-w-sm flex flex-col shadow-2xl overflow-hidden p-6">
+                 <h2 className="font-black text-lg text-slate-900 mb-1">Beri Ulasan</h2>
+                 <p className="text-xs text-slate-500 mb-5">{reviewModalOpen.name}</p>
+                 
+                 <div className="flex gap-2 justify-center mb-6">
+                    {[1,2,3,4,5].map(star => (
+                       <button key={star} onClick={() => setStarRating(star)} className="focus:outline-none transform hover:scale-110 transition-transform">
+                          <Icons.Star filled={star <= starRating} />
+                       </button>
+                    ))}
+                 </div>
+                 
+                 <textarea value={reviewComment} onChange={e=>setReviewComment(e.target.value)} rows="3" placeholder="Kongsi pengalaman anda dengan produk ini..." className="w-full border border-slate-200 rounded p-3 text-sm outline-none focus:border-blue-500 mb-5"></textarea>
+                 
+                 <div className="flex gap-2">
+                    <button onClick={submitReview} className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded text-sm hover:bg-blue-700 transition-colors">Hantar</button>
+                    <button onClick={() => setReviewModalOpen(null)} className="flex-1 bg-slate-100 text-slate-600 font-bold py-2.5 rounded text-sm hover:bg-slate-200 transition-colors">Batal</button>
+                 </div>
+              </div>
+           </div>
+        )}
+
       </div>
     );
   };
@@ -1117,7 +1135,6 @@ export default function App() {
 
     const filteredOrders = activeTab === 'ALL' ? orders : orders.filter(o => o.status === activeTab);
 
-    // DIKEMAS KINI DENGAN TABS FINISHING DAN PACKING
     const statusCounts = {
       ALL: orders.length,
       PENDING: orders.filter(o => o.status === 'PENDING').length,
@@ -1132,7 +1149,6 @@ export default function App() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 relative">
         <h1 className="text-xl font-black text-slate-900 mb-5">Manage Orders</h1>
 
-        {/* TABS MENU DENGAN 2 STATUS TAMBAHAN */}
         <div className="flex gap-2 mb-5 overflow-x-auto pb-2 scrollbar-hide">
           {['ALL', 'PENDING', 'PROCESSING', 'FINISHING', 'PACKING', 'POSTED', 'COMPLETED'].map(tab => (
             <button
@@ -1552,54 +1568,195 @@ export default function App() {
     );
   }
 
+  // ==========================================
+  // VIEW BAHARU: ADMIN PROMO CODES
+  // ==========================================
+  const AdminPromosView = () => {
+    const [isAdding, setIsAdding] = useState(false);
+
+    const handleAddPromo = async (e) => {
+       e.preventDefault();
+       setIsAdding(true);
+       const formData = new FormData(e.target);
+       const codeStr = formData.get('code').toUpperCase();
+       
+       // Cek kalau code dah wujud
+       if (promos.find(p => p.code === codeStr)) {
+          alert("Kod ini sudah wujud!");
+          setIsAdding(false);
+          return;
+       }
+
+       const promoData = {
+          code: codeStr,
+          type: formData.get('type'), // 'fixed' or 'percentage'
+          value: parseFloat(formData.get('value')),
+          isActive: true
+       };
+
+       try {
+          await addDoc(collection(db, "promo_codes"), promoData);
+          alert("Kod Promo Berjaya Ditambah!");
+          e.target.reset();
+       } catch (err) { alert(err.message); }
+       setIsAdding(false);
+    };
+
+    const togglePromoStatus = async (id, currentStatus) => {
+       await updateDoc(doc(db, "promo_codes", id), { isActive: !currentStatus });
+    };
+
+    const deletePromo = async (id) => {
+       if(window.confirm("Padam kod promo ini?")) await deleteDoc(doc(db, "promo_codes", id));
+    };
+
+    return (
+       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+          <h1 className="text-xl font-black text-slate-900 mb-5">Manage Promo Codes</h1>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+             <div className="lg:col-span-1 bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-fit">
+                <h2 className="font-bold text-sm mb-4 text-slate-800">Cipta Kod Promo Baharu</h2>
+                <form onSubmit={handleAddPromo} className="space-y-3">
+                   <div>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">KOD PROMO</label>
+                      <input required name="code" placeholder="Cth: MERDEKA10" className="w-full border border-slate-200 rounded p-2 text-xs outline-none uppercase" />
+                   </div>
+                   <div>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Jenis Diskaun</label>
+                      <select name="type" className="w-full border border-slate-200 rounded p-2 text-xs outline-none">
+                         <option value="fixed">RM (Tolak Jumlah Tepat)</option>
+                         <option value="percentage">% (Tolak Peratusan)</option>
+                      </select>
+                   </div>
+                   <div>
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Nilai Diskaun</label>
+                      <input required type="number" step="0.01" name="value" placeholder="Cth: 10" className="w-full border border-slate-200 rounded p-2 text-xs outline-none" />
+                   </div>
+                   <button disabled={isAdding} type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded text-xs transition-colors mt-2">
+                      {isAdding ? 'Menyimpan...' : 'Cipta Kod'}
+                   </button>
+                </form>
+             </div>
+
+             <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <table className="w-full text-left text-sm whitespace-nowrap">
+                   <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[9px] tracking-wider border-b border-slate-100">
+                      <tr><th className="p-3 pl-5">Kod Promo</th><th className="p-3">Nilai Diskaun</th><th className="p-3">Status</th><th className="p-3">Tindakan</th></tr>
+                   </thead>
+                   <tbody className="divide-y divide-slate-100 text-xs">
+                      {promos.length === 0 && <tr><td colSpan="4" className="p-5 text-center text-slate-500">Tiada kod promo.</td></tr>}
+                      {promos.map(promo => (
+                         <tr key={promo.id}>
+                            <td className="p-3 pl-5 font-black text-blue-600">{promo.code}</td>
+                            <td className="p-3 font-bold text-slate-700">
+                               {promo.type === 'percentage' ? `${promo.value}%` : `RM ${promo.value.toFixed(2)}`}
+                            </td>
+                            <td className="p-3">
+                               <button onClick={() => togglePromoStatus(promo.id, promo.isActive)} className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest ${promo.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                                  {promo.isActive ? 'Aktif' : 'Tutup'}
+                               </button>
+                            </td>
+                            <td className="p-3">
+                               <button onClick={() => deletePromo(promo.id)} className="text-red-500 bg-red-50 p-1.5 rounded hover:bg-red-100 transition-colors"><Icons.Trash /></button>
+                            </td>
+                         </tr>
+                      ))}
+                   </tbody>
+                </table>
+             </div>
+          </div>
+       </div>
+    );
+  };
+
+  // ==========================================
+  // VIEW RESIT: NAIK TARAF KEPADA INVOIS A4
+  // ==========================================
   const ReceiptView = () => {
     if (!selectedOrder) return null;
     return (
-      <div className="min-h-screen bg-slate-50 py-8 print:p-0 print:bg-white">
-        <div className="max-w-2xl mx-auto">
+      <div className="min-h-screen bg-slate-100 py-8 print:p-0 print:bg-white flex justify-center">
+        <div className="w-full max-w-[210mm] relative">
           <div className="flex justify-between items-center mb-4 px-4 print:hidden">
             <button onClick={() => navigateTo(user?.role === 'admin' ? 'admin_orders' : 'myorders')} className="flex items-center text-slate-500 font-bold gap-1 text-xs hover:text-blue-600 transition-colors"><Icons.ArrowLeft /> Back</button>
-            <button onClick={() => window.print()} className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-1.5 rounded-md font-bold text-xs flex items-center gap-1 transition-colors"><Icons.Printer /> Print</button>
+            <button onClick={() => window.print()} className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 transition-colors shadow-md"><Icons.Printer /> Cetak / Save PDF</button>
           </div>
-          <div className="bg-white p-6 sm:p-10 border border-slate-200 print:border-none mx-4 shadow-sm print:shadow-none">
-            <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-6">
+          
+          {/* KERTAS A4 INVOIS */}
+          <div className="bg-white p-10 md:p-14 border border-slate-200 print:border-none shadow-lg print:shadow-none min-h-[297mm]">
+            <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6 mb-8">
               <div>
-                <h1 className="text-2xl font-black tracking-tighter text-blue-600">3D<span className="text-slate-900">STORE</span></h1>
-                <p className="text-slate-500 text-[10px] mt-0.5 uppercase tracking-widest">Official Receipt</p>
+                <h1 className="text-3xl font-black tracking-tighter text-blue-600">3D<span className="text-slate-900">STORE</span></h1>
+                <p className="text-slate-500 text-[10px] mt-1 uppercase tracking-widest font-bold">Kuala Krai, Kelantan</p>
+                <p className="text-slate-500 text-[10px]">Tel: {WHATSAPP_NUMBER}</p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Order No</p>
-                <p className="text-sm font-black text-slate-900">{selectedOrder.orderId}</p>
-                <p className="text-[10px] text-slate-500">{new Date(selectedOrder.date).toLocaleString('en-GB')}</p>
+                <h2 className="text-2xl font-black text-slate-900 uppercase tracking-widest mb-2">Invoice</h2>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">No. Pesanan</p>
+                <p className="text-sm font-black text-blue-600 mb-2">{selectedOrder.orderId}</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Tarikh</p>
+                <p className="text-[10px] text-slate-600 font-medium">{new Date(selectedOrder.date).toLocaleString('en-GB')}</p>
               </div>
             </div>
-            <div className="mb-6">
-              <h3 className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Billed To:</h3>
-              <p className="font-bold text-sm text-slate-900">{selectedOrder.customerName}</p>
-              <p className="text-xs text-slate-600">{selectedOrder.phone}</p>
-              <p className="text-xs text-slate-600 mt-0.5">{selectedOrder.address}</p>
+
+            <div className="grid grid-cols-2 gap-8 mb-10">
+               <div>
+                 <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 border-b border-slate-100 pb-1">Dibilkan Kepada:</h3>
+                 <p className="font-black text-sm text-slate-900 mb-0.5">{selectedOrder.customerName}</p>
+                 <p className="text-xs text-slate-600 mb-0.5 font-medium">{selectedOrder.phone}</p>
+                 <p className="text-xs text-slate-600 leading-relaxed max-w-xs">{selectedOrder.address}</p>
+               </div>
+               <div className="text-right">
+                 <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 border-b border-slate-100 pb-1">Status Penghantaran:</h3>
+                 <p className="text-xs font-black text-slate-900 uppercase tracking-widest bg-slate-100 inline-block px-2 py-1 rounded">{selectedOrder.status}</p>
+                 {selectedOrder.trackingNumber && (
+                    <p className="text-xs text-slate-600 mt-2 font-medium">Tracking: <span className="font-bold">{selectedOrder.trackingNumber}</span></p>
+                 )}
+               </div>
             </div>
-            <table className="w-full text-left mb-6 text-xs">
-              <thead className="border-b border-slate-200 text-[10px] text-slate-500 uppercase tracking-wide">
-                <tr><th className="py-2">Description</th><th className="py-2 text-center">Qty</th><th className="py-2 text-right">Price</th><th className="py-2 text-right">Amount</th></tr>
+
+            <table className="w-full text-left mb-8 text-xs border-collapse">
+              <thead className="bg-slate-900 text-white text-[10px] uppercase tracking-wider">
+                <tr>
+                   <th className="py-3 px-4 font-bold rounded-tl-lg">Keterangan Produk</th>
+                   <th className="py-3 px-4 text-center font-bold">Kuantiti</th>
+                   <th className="py-3 px-4 text-right font-bold">Harga (RM)</th>
+                   <th className="py-3 px-4 text-right font-bold rounded-tr-lg">Jumlah (RM)</th>
+                </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 border-b border-slate-200">
                 {selectedOrder.items?.map((item, idx) => (
-                  <tr key={idx}>
-                    <td className="py-2"><p className="font-bold text-slate-900">{item.name}</p></td>
-                    <td className="py-2 text-center">{item.quantity}</td>
-                    <td className="py-2 text-right">RM {item.price.toFixed(2)}</td>
-                    <td className="py-2 text-right font-bold">RM {(item.price * item.quantity).toFixed(2)}</td>
+                  <tr key={idx} className="hover:bg-slate-50">
+                    <td className="py-4 px-4">
+                       <p className="font-bold text-slate-900">{item.name}</p>
+                       {item.notes && <p className="text-[9px] text-slate-500 mt-1 whitespace-pre-wrap">{item.notes}</p>}
+                    </td>
+                    <td className="py-4 px-4 text-center font-bold">{item.quantity}</td>
+                    <td className="py-4 px-4 text-right font-medium">{item.price.toFixed(2)}</td>
+                    <td className="py-4 px-4 text-right font-black text-slate-900">{(item.price * item.quantity).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div className="flex justify-end border-t border-slate-200 pt-3">
-              <div className="w-48 space-y-1.5 text-xs">
-                <div className="flex justify-between text-slate-500"><span>Subtotal:</span><span>RM {selectedOrder.subtotal?.toFixed(2)}</span></div>
-                <div className="flex justify-between text-slate-500 pb-1.5 border-b border-slate-100"><span>Shipping ({selectedOrder.region}):</span><span>RM {selectedOrder.shippingFee?.toFixed(2)}</span></div>
-                <div className="flex justify-between text-sm font-black text-slate-900 pt-0.5"><span>Total:</span><span>RM {selectedOrder.total.toFixed(2)}</span></div>
+
+            <div className="flex justify-end pt-2">
+              <div className="w-64 space-y-2 text-xs">
+                <div className="flex justify-between text-slate-500 font-medium px-2"><span>Subtotal:</span><span>RM {selectedOrder.subtotal?.toFixed(2)}</span></div>
+                
+                {/* PAPAR DISKAUN JIKA ADA */}
+                {selectedOrder.discountAmount > 0 && (
+                   <div className="flex justify-between text-green-600 font-bold px-2"><span>Diskaun ({selectedOrder.promoCodeUsed}):</span><span>- RM {selectedOrder.discountAmount?.toFixed(2)}</span></div>
+                )}
+                
+                <div className="flex justify-between text-slate-500 font-medium px-2 pb-2 border-b border-slate-200"><span>Kos Penghantaran:</span><span>RM {selectedOrder.shippingFee?.toFixed(2)}</span></div>
+                
+                <div className="flex justify-between text-lg font-black text-slate-900 pt-2 px-2 bg-slate-50 rounded-lg py-3"><span>Jumlah Keseluruhan:</span><span className="text-blue-600">RM {selectedOrder.total.toFixed(2)}</span></div>
               </div>
+            </div>
+            
+            <div className="mt-16 pt-8 border-t border-slate-200 text-center text-[10px] text-slate-400 font-medium">
+               <p>Terima kasih kerana menyokong perniagaan kami!</p>
+               <p>Dokumen ini dijana secara berkomputer, tandatangan tidak diperlukan.</p>
             </div>
           </div>
         </div>
@@ -1625,6 +1782,7 @@ export default function App() {
         {view === 'admin_orders' && <AdminOrdersView />}
         {view === 'admin_quotes' && <AdminQuotesView />}
         {view === 'admin_products' && <AdminProductsView />}
+        {view === 'admin_promos' && <AdminPromosView />}
         {view === 'receipt' && <ReceiptView />}
       </main>
 
