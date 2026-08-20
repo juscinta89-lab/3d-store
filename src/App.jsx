@@ -1519,6 +1519,196 @@ export default function App() {
     );
   };
 
+  const SuccessView = () => {
+    if (!completedOrder) {
+      return (
+        <div className="max-w-md mx-auto px-4 py-16 text-center">
+          <p className="text-slate-500 text-sm mb-4">Tiada pesanan terkini dijumpai.</p>
+          <button onClick={() => navigateTo('home')} className="bg-blue-600 text-white px-6 py-2.5 rounded-md font-bold text-sm">Kembali ke Store</button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="max-w-lg mx-auto px-4 sm:px-6 py-10 sm:py-16">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-10 text-center">
+          <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-5">
+            <Icons.CheckCircle />
+          </div>
+          <h1 className="text-xl font-black text-slate-900 mb-2">Pesanan Berjaya Dihantar!</h1>
+          <p className="text-sm text-slate-500 mb-6">Terima kasih, {completedOrder.customerName}. Pesanan anda sedang disemak oleh admin kami.</p>
+
+          <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 mb-6 text-left space-y-2">
+            <div className="flex justify-between text-xs"><span className="text-slate-400 font-bold uppercase tracking-widest">Order ID</span><span className="font-black text-blue-600">{completedOrder.orderId}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-slate-400 font-bold uppercase tracking-widest">Jumlah</span><span className="font-black text-slate-900">RM {completedOrder.total?.toFixed(2)}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-slate-400 font-bold uppercase tracking-widest">Status</span><span className="font-bold text-amber-600">PENDING</span></div>
+          </div>
+
+          <p className="text-xs text-slate-500 mb-5">Sila hantar bukti bayaran melalui WhatsApp jika tetingkap tidak terbuka secara automatik.</p>
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            <a href={completedOrder.waLink} target="_blank" rel="noopener noreferrer" className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 transition-colors">
+              <Icons.WhatsApp /> Hubungi via WhatsApp
+            </a>
+            <button onClick={() => navigateTo('myorders')} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-lg font-bold text-xs uppercase tracking-wide transition-colors">Lihat Pesanan Saya</button>
+          </div>
+          <button onClick={() => navigateTo('home')} className="mt-3 text-xs font-bold text-slate-400 hover:text-blue-600 transition-colors">Kembali ke Store</button>
+        </div>
+      </div>
+    );
+  };
+
+  const CustomPrintView = () => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+
+    const handleSubmitRequest = async (e) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+      const formData = new FormData(e.target);
+      const requestId = `REQ-${Date.now().toString().slice(-6)}`;
+      const file = formData.get('file');
+      let fileUrl = '';
+
+      try {
+        if (file && file.size > 0) {
+          const storageRef = ref(storage, `custom_requests/${requestId}-${file.name}`);
+          await uploadBytes(storageRef, file);
+          fileUrl = await getDownloadURL(storageRef);
+        }
+
+        const requestData = {
+          requestId, date: new Date().toISOString(),
+          customerName: formData.get('name'), phone: formData.get('phone'),
+          email: user?.email || formData.get('email') || 'Guest',
+          description: formData.get('description'), fileUrl, status: 'NEW'
+        };
+
+        await addDoc(collection(db, "custom_requests"), requestData);
+
+        let waText = `*PERMINTAAN CUSTOM 3D PRINT*\n\n*ID:* ${requestId}\n*Nama:* ${requestData.customerName}\n*Tel:* ${requestData.phone}\n\n*Keterangan:*\n${requestData.description}`;
+        const waLink = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(waText)}`;
+        setTimeout(() => { try { window.open(waLink, '_blank'); } catch(err) {} }, 100);
+
+        setSubmitted(true);
+        e.target.reset();
+      } catch (error) { alert(`Gagal menghantar permintaan!\nError: ${error.message}`); }
+      setIsSubmitting(false);
+    };
+
+    if (submitted) {
+      return (
+        <div className="max-w-lg mx-auto px-4 sm:px-6 py-16 text-center">
+          <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-5"><Icons.CheckCircle /></div>
+          <h1 className="text-xl font-black text-slate-900 mb-2">Permintaan Berjaya Dihantar!</h1>
+          <p className="text-sm text-slate-500 mb-6">Kami akan menghubungi anda dengan sebutharga tidak lama lagi.</p>
+          <div className="flex gap-2 justify-center">
+            <button onClick={() => setSubmitted(false)} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-md font-bold text-xs">Hantar Lagi</button>
+            <button onClick={() => navigateTo('home')} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-md font-bold text-xs">Kembali ke Store</button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <h1 className="text-xl font-black mb-1 text-slate-900">Custom 3D Print</h1>
+        <p className="text-sm text-slate-500 mb-6">Ada idea atau fail sendiri? Hantar keterangan dan kami akan berikan sebutharga percuma.</p>
+
+        <form onSubmit={handleSubmitRequest} className="bg-white p-5 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Nama Penuh *</label><input required name="name" defaultValue={user?.name || ''} className="w-full border border-slate-200 rounded p-2.5 text-sm outline-none focus:border-blue-500" /></div>
+            <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">No. Telefon *</label><input required name="phone" type="tel" placeholder="0194155722" className="w-full border border-slate-200 rounded p-2.5 text-sm outline-none focus:border-blue-500" /></div>
+          </div>
+          {!user && (
+            <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Email</label><input name="email" type="email" placeholder="contoh@email.com" className="w-full border border-slate-200 rounded p-2.5 text-sm outline-none focus:border-blue-500" /></div>
+          )}
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Keterangan Projek *</label>
+            <textarea required name="description" rows="5" placeholder="Terangkan apa yang anda mahu cetak: saiz, warna, kuantiti, tarikh diperlukan, dsb." className="w-full border border-slate-200 rounded p-2.5 text-sm outline-none focus:border-blue-500"></textarea>
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Muat Naik Fail (STL / Gambar / PDF)</label>
+            <input type="file" name="file" accept=".stl,.obj,image/*,application/pdf" className="w-full border border-slate-200 rounded-lg p-1.5 text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white" />
+            <p className="text-[10px] text-slate-400 mt-1">Pilihan sahaja — anda juga boleh terangkan idea anda dalam teks di atas.</p>
+          </div>
+          <button disabled={isSubmitting} type="submit" className={`w-full py-3.5 rounded-lg font-bold text-sm uppercase tracking-wide text-white shadow-md transition-colors ${isSubmitting ? 'bg-slate-400' : 'bg-blue-600 hover:bg-blue-700'}`}>
+            {isSubmitting ? 'Menghantar...' : 'Hantar Permintaan Sebutharga'}
+          </button>
+        </form>
+      </div>
+    );
+  };
+
+  const PoliciesView = () => {
+    const sections = [
+      {
+        title: 'Penghantaran & Pos',
+        icon: <Icons.Truck />,
+        content: [
+          'Semenanjung Malaysia: RM8 (sehingga 1kg pertama), RM3 setiap 500g tambahan.',
+          'Sabah & Sarawak: RM15 (sehingga 1kg pertama), RM5 setiap 500g tambahan.',
+          'Pesanan biasanya diproses dalam 3-7 hari bekerja bergantung kepada kerumitan cetakan.'
+        ]
+      },
+      {
+        title: 'Pembayaran',
+        icon: <Icons.Ticket />,
+        content: [
+          'Pembayaran diterima melalui pindahan bank / DuitNow QR semasa checkout.',
+          'Sila muat naik resit pembayaran anda supaya pesanan dapat disahkan dengan pantas.',
+          'Pesanan hanya akan diproses selepas pembayaran disahkan oleh admin.'
+        ]
+      },
+      {
+        title: 'Custom 3D Print',
+        icon: <Icons.FileUp />,
+        content: [
+          'Hantar fail STL/gambar atau terangkan idea anda melalui borang Custom 3D Print.',
+          'Sebutharga akan diberikan melalui WhatsApp selepas semakan.',
+          'Harga bergantung kepada saiz, bahan, dan kerumitan model.'
+        ]
+      },
+      {
+        title: 'Pemulangan & Pertukaran',
+        icon: <Icons.ShieldCheck />,
+        content: [
+          'Oleh kerana kebanyakan item dicetak mengikut pesanan, pemulangan hanya diterima jika terdapat kecacatan pembuatan.',
+          'Sila hubungi kami dalam masa 3 hari selepas menerima item jika terdapat sebarang masalah.',
+          'Sertakan gambar/video sebagai bukti untuk mempercepatkan proses.'
+        ]
+      }
+    ];
+
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <h1 className="text-xl font-black mb-1 text-slate-900">Polisi & Soalan Lazim</h1>
+        <p className="text-sm text-slate-500 mb-6">Semua yang anda perlu tahu sebelum membuat pesanan.</p>
+
+        <div className="space-y-4">
+          {sections.map((sec, idx) => (
+            <div key={idx} className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+              <h2 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2 text-blue-600">{sec.icon} {sec.title}</h2>
+              <ul className="space-y-1.5 list-disc list-inside">
+                {sec.content.map((line, lineIdx) => (
+                  <li key={lineIdx} className="text-xs text-slate-600 leading-relaxed">{line}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+
+          <div className="bg-slate-900 text-white rounded-xl p-5 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div>
+              <h2 className="text-sm font-bold mb-1">Ada soalan lain?</h2>
+              <p className="text-xs text-slate-400">Hubungi kami terus melalui WhatsApp, kami sedia membantu.</p>
+            </div>
+            <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="bg-green-500 hover:bg-green-600 text-white px-4 py-2.5 rounded-lg font-bold text-xs flex items-center gap-2 whitespace-nowrap transition-colors"><Icons.WhatsApp /> WhatsApp Kami</a>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col md:flex-row relative">
       {view !== 'receipt' && <Sidebar />}
