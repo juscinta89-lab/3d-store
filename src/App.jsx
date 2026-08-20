@@ -153,9 +153,6 @@ export default function App() {
   };
   const handleLogout = () => { signOut(auth); };
 
-  // ==========================================
-  // FLOATING WHATSAPP BUTTON COMPONENT
-  // ==========================================
   const FloatingWhatsApp = () => (
     <a 
       href={`https://wa.me/${WHATSAPP_NUMBER}`} 
@@ -429,7 +426,7 @@ export default function App() {
               
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Notes</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows="2" className="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition-colors" placeholder="e.g. Senarai nama untuk nametag..."></textarea>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows="2" className="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition-colors" placeholder="e.g. Senarai nama untuk nametag (Sila tekan Enter bagi setiap nama)..."></textarea>
               </div>
 
               <button onClick={() => { addToCart(selectedProduct, qty, notes); navigateTo('cart'); }} disabled={selectedProduct.stock <= 0} className={`w-full py-3.5 rounded-lg font-bold text-sm uppercase tracking-wide flex justify-center items-center gap-2 ${selectedProduct.stock > 0 ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}>
@@ -855,13 +852,9 @@ export default function App() {
     </div>
   );
 
-  // ==========================================
-  // VIEW PELANGGAN: MY ORDERS (DENGAN VISUAL TIMELINE)
-  // ==========================================
   const MyOrdersView = () => {
     if (!user || user.role === 'admin') return null;
 
-    // KOMPONEN TIMELINE
     const OrderTimeline = ({ status }) => {
       const steps = ['PENDING', 'PROCESSING', 'POSTED', 'COMPLETED'];
       const labels = ['Dibayar', 'Diproses', 'Dipos', 'Selesai'];
@@ -870,9 +863,7 @@ export default function App() {
       return (
         <div className="w-full pt-4 pb-6 mt-2 mb-2 border-t border-b border-slate-100">
           <div className="flex justify-between items-center relative px-2">
-            {/* Garisan Belakang (Kelabu) */}
             <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-1 bg-slate-200 z-0 rounded-full"></div>
-            {/* Garisan Aktif (Biru) */}
             <div className="absolute left-4 top-1/2 -translate-y-1/2 h-1 bg-blue-500 z-0 transition-all duration-500 rounded-full" style={{ width: `calc(${(currentIndex / 3) * 100}% - 32px)` }}></div>
             
             {steps.map((step, idx) => {
@@ -911,7 +902,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* VISUAL TIMELINE DIMASUKKAN DI SINI */}
                 <OrderTimeline status={order.status} />
                 
                 <div className="mb-3 mt-4">
@@ -1068,11 +1058,35 @@ export default function App() {
       await updateDoc(doc(db, "orders", docId), { status: newStatus });
     };
 
-    // FUNGSI COPY MAKLUMAT POS
     const handleCopyDetails = (order) => {
       const text = `NAMA: ${order.customerName}\nTEL: ${order.phone}\nALAMAT:\n${order.address}\n\nPOSKOD & NEGERI: ${order.region}`;
       navigator.clipboard.writeText(text);
       alert("Maklumat pelanggan berjaya disalin!");
+    };
+
+    // ==========================================
+    // FUNGSI BAHARU: TOGGLE CHECKLIST NOTA
+    // ==========================================
+    const toggleNoteTask = async (order, itemIndex, lineIndex) => {
+      try {
+        const updatedItems = [...order.items];
+        const item = updatedItems[itemIndex];
+        const completedNotes = item.completedNotes || [];
+        
+        if (completedNotes.includes(lineIndex)) {
+          item.completedNotes = completedNotes.filter(i => i !== lineIndex);
+        } else {
+          item.completedNotes = [...completedNotes, lineIndex];
+        }
+        
+        // Update modal UI immediately
+        setViewingOrder({ ...order, items: updatedItems });
+        
+        // Save to Firebase
+        await updateDoc(doc(db, "orders", order.id), { items: updatedItems });
+      } catch(err) {
+        console.error("Gagal simpan checklist", err);
+      }
     };
 
     const handleDeliverySubmit = async (e, orderId) => {
@@ -1171,7 +1185,6 @@ export default function App() {
                           <p className="text-[10px] text-slate-500">{order.phone}</p>
                           <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{order.region}</p>
                           
-                          {/* BUTANG COPY MAKLUMAT DIMASUKKAN DI SINI */}
                           <button onClick={() => handleCopyDetails(order)} className="mt-2 text-[9px] bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-2 py-1 rounded flex items-center gap-1 transition-colors w-max font-bold">
                             <Icons.Copy /> Salin Maklumat Pos
                           </button>
@@ -1231,6 +1244,9 @@ export default function App() {
             </div>
           </div>
 
+          {/* ========================================== */}
+          {/* MODAL POP-UP (KINI ADA FUNGSI CHECKLIST) */}
+          {/* ========================================== */}
           {viewingOrder && (
             <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
               <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
@@ -1256,24 +1272,52 @@ export default function App() {
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">Senarai Barang & Nota</p>
                     <div className="space-y-3">
-                      {viewingOrder.items?.map((item, idx) => (
-                        <div key={idx} className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
-                          <div className="flex justify-between items-start mb-2 border-b border-slate-50 pb-2">
-                            <p className="font-bold text-slate-900 text-sm">
-                              <span className="text-blue-600 mr-1">{item.quantity}x</span> {item.name}
-                            </p>
-                            <p className="font-black text-slate-900 text-sm">RM {(item.price * item.quantity).toFixed(2)}</p>
-                          </div>
-                          {item.notes ? (
-                            <div className="bg-amber-50 border border-amber-200 p-2.5 rounded text-xs text-amber-900">
-                              <span className="font-black uppercase tracking-wider block mb-1">💬 Nota Pelanggan:</span> 
-                              <div className="whitespace-pre-wrap font-medium">{item.notes}</div>
+                      {viewingOrder.items?.map((item, itemIdx) => {
+                        // POTONG NOTA KEPADA BARISAN-BARISAN (LINES)
+                        const lines = item.notes ? item.notes.split('\n') : [];
+
+                        return (
+                          <div key={itemIdx} className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                            <div className="flex justify-between items-start mb-2 border-b border-slate-50 pb-2">
+                              <p className="font-bold text-slate-900 text-sm">
+                                <span className="text-blue-600 mr-1">{item.quantity}x</span> {item.name}
+                              </p>
+                              <p className="font-black text-slate-900 text-sm">RM {(item.price * item.quantity).toFixed(2)}</p>
                             </div>
-                          ) : (
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Tiada nota tambahan</p>
-                          )}
-                        </div>
-                      ))}
+                            
+                            {/* KAWASAN RENDER CHECKLIST */}
+                            {item.notes ? (
+                              <div className="bg-amber-50 border border-amber-200 p-3 rounded text-xs text-amber-900">
+                                <span className="font-black uppercase tracking-wider block mb-2 text-[10px] text-amber-700 border-b border-amber-200/50 pb-1">💬 Nota Checklist Pelanggan:</span> 
+                                <div className="space-y-2 mt-1.5">
+                                  {lines.map((line, lineIdx) => {
+                                    if (!line.trim()) return null; // Abaikan barisan kosong
+                                    
+                                    // Semak jika barisan ini ada dalam array completedNotes
+                                    const isChecked = item.completedNotes?.includes(lineIdx);
+                                    
+                                    return (
+                                      <label key={lineIdx} className="flex items-start gap-2.5 cursor-pointer group">
+                                        <input 
+                                          type="checkbox" 
+                                          checked={!!isChecked} 
+                                          onChange={() => toggleNoteTask(viewingOrder, itemIdx, lineIdx)}
+                                          className="mt-0.5 w-4 h-4 rounded border-amber-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                        />
+                                        <span className={`font-medium transition-colors ${isChecked ? 'line-through text-amber-900/40' : 'text-amber-900'}`}>
+                                          {line}
+                                        </span>
+                                      </label>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Tiada nota tambahan</p>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -1572,7 +1616,6 @@ export default function App() {
         {view === 'receipt' && <ReceiptView />}
       </main>
 
-      {/* BUTANG WHATSAPP TERAPUNG DI SINI */}
       {view !== 'receipt' && <FloatingWhatsApp />}
     </div>
   );
