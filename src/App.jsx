@@ -127,14 +127,14 @@ function AdminOrdersView({ orders, navigateTo }) {
 
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 relative">
-        <h1 className="text-xl font-black text-slate-900 mb-5">Manage Orders</h1>
+        <h1 className="text-xl font-semibold text-slate-900 mb-5">Manage Orders</h1>
 
         <div className="flex gap-2 mb-5 overflow-x-auto pb-2 scrollbar-hide">
           {['ALL', 'PENDING', 'PROCESSING', 'FINISHING', 'PACKING', 'POSTED', 'COMPLETED'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg font-bold text-xs whitespace-nowrap transition-colors border shadow-sm ${
+              className={`px-4 py-2 rounded-xl font-bold text-xs whitespace-nowrap transition-colors border shadow-sm ${
                 activeTab === tab 
                   ? (tab === 'PENDING' ? 'bg-red-500 text-white border-red-500' :
                      tab === 'PROCESSING' ? 'bg-amber-500 text-white border-amber-500' :
@@ -142,8 +142,8 @@ function AdminOrdersView({ orders, navigateTo }) {
                      tab === 'PACKING' ? 'bg-indigo-500 text-white border-indigo-500' :
                      tab === 'POSTED' ? 'bg-blue-500 text-white border-blue-500' :
                      tab === 'COMPLETED' ? 'bg-green-500 text-white border-green-500' :
-                     'bg-slate-800 text-white border-slate-800')
-                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                     'bg-slate-800 text-white border-[#2d2d2f]')
+                  : 'bg-white text-slate-600 border-slate-100 hover:bg-slate-50'
               }`}
             >
               {tab} <span className="opacity-75 ml-1">({statusCounts[tab]})</span>
@@ -151,7 +151,7 @@ function AdminOrdersView({ orders, navigateTo }) {
           ))}
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[9px] tracking-wider border-b border-slate-100">
@@ -171,7 +171,7 @@ function AdminOrdersView({ orders, navigateTo }) {
                     return (
                       <tr key={order.id} className={`${statusBorderClass} hover:bg-slate-50 transition-colors`}>
                         <td className="p-3 pl-4 align-top">
-                          <span className="font-bold text-blue-600 block mb-0.5">{order.orderId}</span>
+                          <span className="font-bold text-[#0071e3] block mb-0.5">{order.orderId}</span>
                           <span className="text-[10px] text-slate-400 block mb-1.5">{new Date(order.date).toLocaleDateString('en-GB')}</span>
                           {order.receiptUrl ? <a href={order.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Receipt</a> : <span className="text-[9px] text-slate-400 italic">No Receipt</span>}
                         </td>
@@ -179,7 +179,7 @@ function AdminOrdersView({ orders, navigateTo }) {
                           <p className="font-bold text-slate-900">{order.customerName}</p>
                           <p className="text-[10px] text-slate-500">{order.phone}</p>
                           <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{order.region}</p>
-                          <button onClick={() => handleCopyDetails(order)} className="mt-2 text-[9px] bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 px-2 py-1 rounded flex items-center gap-1 transition-colors w-max font-bold"><Icons.Copy /> Salin Maklumat</button>
+                          <button onClick={() => handleCopyDetails(order)} className="mt-2 text-[9px] bg-slate-100 hover:bg-slate-200 border border-slate-100 text-slate-600 px-2 py-1 rounded flex items-center gap-1 transition-colors w-max font-bold"><Icons.Copy /> Salin Maklumat</button>
                         </td>
                         <td className="p-3 align-top">
                           <ul className="space-y-0.5 mb-1.5">
@@ -187,8 +187,8 @@ function AdminOrdersView({ orders, navigateTo }) {
                               <li key={idx}><span className="font-bold text-slate-900">{item.quantity}x</span> {item.name}</li>
                             ))}
                           </ul>
-                          <p className="font-black text-blue-600 text-xs">RM {order.total.toFixed(2)}</p>
-                          <button onClick={() => setViewingOrder(order)} className="mt-2 text-[9px] font-bold bg-blue-50 text-blue-600 border border-blue-100 px-2 py-1 rounded w-full hover:bg-blue-100 transition-colors">Lihat Detail & Nota</button>
+                          <p className="font-semibold text-[#0071e3] text-xs">RM {order.total.toFixed(2)}</p>
+                          <button onClick={() => setViewingOrder(order)} className="mt-2 text-[9px] font-bold bg-blue-50 text-[#0071e3] border border-blue-100 px-2 py-1 rounded w-full hover:bg-blue-100 transition-colors">Lihat Detail & Nota</button>
                         </td>
                         
                         <td className="p-3 align-top">
@@ -197,16 +197,16 @@ function AdminOrdersView({ orders, navigateTo }) {
                               <input required name="trackingNumber" placeholder="Tracking No." defaultValue={order.trackingNumber||''} className="w-full text-[10px] p-1 border rounded outline-none" />
                               <input type="file" name="deliveryProof" accept="image/*,application/pdf" className="w-full text-[9px]" />
                               <div className="flex gap-1">
-                                <button type="submit" className="flex-1 bg-blue-600 text-white py-0.5 rounded text-[9px] font-bold hover:bg-blue-700">Save</button>
+                                <button type="submit" className="flex-1 bg-black text-white py-0.5 rounded text-[9px] font-bold hover:bg-neutral-800">Save</button>
                                 <button type="button" onClick={()=>setEditingDelivery(null)} className="flex-1 bg-slate-200 text-slate-700 py-0.5 rounded text-[9px] font-bold hover:bg-slate-300">Cancel</button>
                               </div>
                             </form>
                           ) : (
                             <div>
                               {order.trackingNumber ? (
-                                <><p className="text-[10px] font-bold text-slate-800 mb-0.5">{order.trackingNumber}</p>{order.deliveryProofUrl && <a href={order.deliveryProofUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold mb-1 inline-block">View</a>}</>
+                                <><p className="text-[10px] font-bold text-slate-800 mb-0.5">{order.trackingNumber}</p>{order.deliveryProofUrl && <a href={order.deliveryProofUrl} target="_blank" rel="noopener noreferrer" className="text-[9px] bg-blue-50 text-[#0071e3] px-1.5 py-0.5 rounded font-bold mb-1 inline-block">View</a>}</>
                               ) : <p className="text-[9px] text-slate-400 italic mb-1">Not shipped</p>}
-                              <button onClick={()=>setEditingDelivery(order.id)} className="text-[9px] bg-white border border-slate-200 px-1.5 py-0.5 rounded font-bold text-slate-600 hover:bg-slate-50"><Icons.Truck /> Update</button>
+                              <button onClick={()=>setEditingDelivery(order.id)} className="text-[9px] bg-white border border-slate-100 px-1.5 py-0.5 rounded font-bold text-slate-600 hover:bg-slate-50"><Icons.Truck /> Update</button>
                             </div>
                           )}
                         </td>
@@ -221,7 +221,7 @@ function AdminOrdersView({ orders, navigateTo }) {
                             <option value="COMPLETED">COMPLETED</option>
                           </select>
                           <div className="flex gap-1 w-28">
-                            <button onClick={() => navigateTo('receipt', order)} className="flex-1 bg-white border border-slate-200 text-slate-600 p-1.5 rounded flex justify-center hover:bg-slate-50"><Icons.Printer /></button>
+                            <button onClick={() => navigateTo('receipt', order)} className="flex-1 bg-white border border-slate-100 text-slate-600 p-1.5 rounded flex justify-center hover:bg-slate-50"><Icons.Printer /></button>
                             <button onClick={() => handleDeleteOrder(order.id)} className="flex-1 bg-white border border-red-200 text-red-500 p-1.5 rounded flex justify-center hover:bg-red-50"><Icons.Trash /></button>
                           </div>
                         </td>
@@ -234,18 +234,18 @@ function AdminOrdersView({ orders, navigateTo }) {
           </div>
 
           {viewingOrder && (
-            <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-                <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                  <h2 className="font-black text-lg text-slate-900">Detail Pesanan: {viewingOrder.orderId}</h2>
+            <div className="fixed inset-0 bg-[#1d1d1f]/60 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+                <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                  <h2 className="font-semibold text-lg text-slate-900">Detail Pesanan: {viewingOrder.orderId}</h2>
                   <button onClick={closeAndSaveModal} className="p-1 text-slate-400 hover:bg-slate-200 hover:text-red-500 rounded"><Icons.X /></button>
                 </div>
                 
                 <div className="p-5 overflow-y-auto space-y-6 text-sm">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
                     <div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Maklumat Pelanggan</p>
-                      <p className="font-black text-slate-900">{viewingOrder.customerName}</p>
+                      <p className="font-semibold text-slate-900">{viewingOrder.customerName}</p>
                       <p className="text-slate-600 text-xs mt-0.5 font-medium">{viewingOrder.phone}</p>
                     </div>
                     <div>
@@ -261,23 +261,23 @@ function AdminOrdersView({ orders, navigateTo }) {
                       {viewingOrder.items?.map((item, itemIdx) => {
                         const lines = item.notes ? item.notes.split('\n') : [];
                         return (
-                          <div key={itemIdx} className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                          <div key={itemIdx} className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
                             <div className="flex justify-between items-start mb-2 border-b border-slate-50 pb-2">
                               <p className="font-bold text-slate-900 text-sm">
-                                <span className="text-blue-600 mr-1">{item.quantity}x</span> {item.name}
+                                <span className="text-[#0071e3] mr-1">{item.quantity}x</span> {item.name}
                               </p>
-                              <p className="font-black text-slate-900 text-sm">RM {(item.price * item.quantity).toFixed(2)}</p>
+                              <p className="font-semibold text-slate-900 text-sm">RM {(item.price * item.quantity).toFixed(2)}</p>
                             </div>
                             {item.notes ? (
                               <div className="bg-amber-50 border border-amber-200 p-3 rounded text-xs text-amber-900">
-                                <span className="font-black uppercase tracking-wider block mb-2 text-[10px] text-amber-700 border-b border-amber-200/50 pb-1">💬 Nota Checklist Pelanggan:</span> 
+                                <span className="font-semibold uppercase tracking-wider block mb-2 text-[10px] text-amber-700 border-b border-amber-200/50 pb-1">💬 Nota Checklist Pelanggan:</span> 
                                 <div className="space-y-2 mt-1.5">
                                   {lines.map((line, lineIdx) => {
                                     if (!line.trim()) return null; 
                                     const isChecked = item.completedNotes?.includes(lineIdx);
                                     return (
                                       <label key={lineIdx} className="flex items-start gap-2.5 cursor-pointer group">
-                                        <input type="checkbox" checked={!!isChecked} onChange={() => toggleNoteTask(itemIdx, lineIdx)} className="mt-0.5 w-4 h-4 rounded border-amber-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                                        <input type="checkbox" checked={!!isChecked} onChange={() => toggleNoteTask(itemIdx, lineIdx)} className="mt-0.5 w-4 h-4 rounded border-amber-300 text-[#0071e3] focus:ring-blue-500 cursor-pointer" />
                                         <span className={`font-medium transition-colors ${isChecked ? 'line-through text-amber-900/40' : 'text-amber-900'}`}>{line}</span>
                                       </label>
                                     );
@@ -291,12 +291,12 @@ function AdminOrdersView({ orders, navigateTo }) {
                     </div>
                   </div>
 
-                  <div className="bg-slate-900 text-white p-5 rounded-lg flex flex-col md:flex-row justify-between items-center gap-3 shadow-md">
+                  <div className="bg-[#1d1d1f] text-white p-5 rounded-xl flex flex-col md:flex-row justify-between items-center gap-3 shadow-md">
                     <div className="text-center md:text-left">
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Jumlah Perlu Dibayar</p>
                       <p className="text-[10px] text-slate-400 mt-1">Termasuk kos pos RM {viewingOrder.shippingFee?.toFixed(2)}</p>
                     </div>
-                    <p className="text-3xl font-black text-blue-400">RM {viewingOrder.total.toFixed(2)}</p>
+                    <p className="text-3xl font-semibold text-[#2997ff]">RM {viewingOrder.total.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
@@ -442,69 +442,69 @@ export default function App() {
 
   const Sidebar = () => (
     <>
-      <div className="md:hidden bg-white shadow-sm border-b border-slate-200 flex justify-between items-center px-4 h-14 fixed top-0 w-full z-40 print:hidden">
+      <div className="md:hidden bg-white/90 backdrop-blur-xl shadow-sm border-b border-slate-100 flex justify-between items-center px-4 h-14 fixed top-0 w-full z-40 print:hidden">
         <div className="flex items-center gap-2">
           <img src={LOGO_URL} alt="Logo" className="w-8 h-8 object-contain" onError={(e) => e.target.style.display='none'} />
-          <span className="text-xl font-black tracking-tighter text-blue-600">3D<span className="text-slate-900">STORE</span></span>
+          <span className="text-xl font-semibold tracking-tight text-[#1d1d1f]">3D<span className="text-[#86868b] font-normal">Store</span></span>
         </div>
-        <button onClick={() => setIsSidebarOpen(true)} className="text-slate-600 p-2"><Icons.Menu /></button>
+        <button onClick={() => setIsSidebarOpen(true)} className="text-[#1d1d1f] p-2"><Icons.Menu /></button>
       </div>
 
-      {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/60 z-40 md:hidden print:hidden" onClick={() => setIsSidebarOpen(false)}></div>}
+      {isSidebarOpen && <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 md:hidden print:hidden" onClick={() => setIsSidebarOpen(false)}></div>}
 
-      <div className={`fixed inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-200 ease-out z-50 flex flex-col print:hidden shadow-2xl`}>
+      <div className={`fixed inset-y-0 left-0 w-64 bg-white text-[#1d1d1f] transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-200 ease-out z-50 flex flex-col print:hidden border-r border-slate-100`}>
         
-        <div className="h-16 flex items-center px-6 border-b border-slate-800 bg-slate-950 gap-3">
-          <img src={LOGO_URL} alt="Logo" className="w-8 h-8 object-contain drop-shadow-md" onError={(e) => e.target.style.display='none'} />
-          <span className="text-2xl font-black tracking-tighter text-white">3D<span className="text-blue-500">STORE</span></span>
+        <div className="h-16 flex items-center px-6 gap-3">
+          <img src={LOGO_URL} alt="Logo" className="w-8 h-8 object-contain" onError={(e) => e.target.style.display='none'} />
+          <span className="text-xl font-semibold tracking-tight text-[#1d1d1f]">3D<span className="text-[#86868b] font-normal">Store</span></span>
         </div>
 
         {user && (
-          <div className="px-6 py-5 border-b border-slate-800 bg-slate-900/50">
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Welcome back,</p>
-            <p className="text-sm font-bold text-white line-clamp-1">{user.name}</p>
-            <p className="text-[10px] text-blue-400 mt-1 uppercase tracking-wider">{user.role}</p>
+          <div className="mx-3 mb-2 px-4 py-3.5 rounded-3xl bg-[#f5f5f7]">
+            <p className="text-[9px] font-semibold text-[#86868b] uppercase tracking-widest mb-1">Welcome back</p>
+            <p className="text-sm font-semibold text-[#1d1d1f] line-clamp-1">{user.name}</p>
+            <p className="text-[10px] text-[#0071e3] mt-0.5 uppercase tracking-wider font-medium">{user.role}</p>
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-          <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-2">Main Menu</p>
-          <button onClick={() => navigateTo('home')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'home' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Store /> Store</button>
-          <button onClick={() => navigateTo('custom_print')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'custom_print' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.FileUp /> Custom 3D Print</button>
-          <button onClick={() => navigateTo('cart')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium relative ${view === 'cart' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
+        <div className="flex-1 overflow-y-auto py-2 px-3 space-y-0.5">
+          <p className="px-3 text-[9px] font-semibold text-[#86868b] uppercase tracking-widest mb-2 mt-3">Main Menu</p>
+          <button onClick={() => navigateTo('home')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-colors ${view === 'home' ? 'bg-[#1d1d1f] text-white' : 'text-[#424245] hover:bg-[#f5f5f7]'}`}><Icons.Store /> Store</button>
+          <button onClick={() => navigateTo('custom_print')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-colors ${view === 'custom_print' ? 'bg-[#1d1d1f] text-white' : 'text-[#424245] hover:bg-[#f5f5f7]'}`}><Icons.FileUp /> Custom 3D Print</button>
+          <button onClick={() => navigateTo('cart')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium relative transition-colors ${view === 'cart' ? 'bg-[#1d1d1f] text-white' : 'text-[#424245] hover:bg-[#f5f5f7]'}`}>
             <Icons.Cart /> Cart
-            {cart.length > 0 && <span className={`absolute right-4 text-xs font-bold px-2 py-0.5 rounded-full ${view === 'cart' ? 'bg-white text-blue-600' : 'bg-blue-500 text-white'}`}>{cart.length}</span>}
+            {cart.length > 0 && <span className={`absolute right-4 text-xs font-semibold px-2 py-0.5 rounded-full ${view === 'cart' ? 'bg-white text-[#1d1d1f]' : 'bg-[#0071e3] text-white'}`}>{cart.length}</span>}
           </button>
           
           {user && user.role !== 'admin' && (
             <>
-              <button onClick={() => navigateTo('myorders')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'myorders' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Orders /> My Orders</button>
-              <button onClick={() => navigateTo('profile')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'profile' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.User /> My Profile</button>
+              <button onClick={() => navigateTo('myorders')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-colors ${view === 'myorders' ? 'bg-[#1d1d1f] text-white' : 'text-[#424245] hover:bg-[#f5f5f7]'}`}><Icons.Orders /> My Orders</button>
+              <button onClick={() => navigateTo('profile')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-colors ${view === 'profile' ? 'bg-[#1d1d1f] text-white' : 'text-[#424245] hover:bg-[#f5f5f7]'}`}><Icons.User /> My Profile</button>
             </>
           )}
 
-          <button onClick={() => navigateTo('policies')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'policies' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.ShieldCheck /> Policies & FAQ</button>
+          <button onClick={() => navigateTo('policies')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-colors ${view === 'policies' ? 'bg-[#1d1d1f] text-white' : 'text-[#424245] hover:bg-[#f5f5f7]'}`}><Icons.ShieldCheck /> Policies & FAQ</button>
 
           {user?.role === 'admin' && (
             <>
-              <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 mt-6">Administration</p>
-              <button onClick={() => navigateTo('admin_dashboard')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_dashboard' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.TrendingUp /> Dashboard</button>
-              <button onClick={() => navigateTo('admin_orders')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_orders' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.ClipboardList /> Manage Orders</button>
-              <button onClick={() => navigateTo('admin_quotes')} className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg font-medium ${view === 'admin_quotes' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}>
+              <p className="px-3 text-[9px] font-semibold text-[#86868b] uppercase tracking-widest mb-2 mt-6">Administration</p>
+              <button onClick={() => navigateTo('admin_dashboard')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-colors ${view === 'admin_dashboard' ? 'bg-[#1d1d1f] text-white' : 'text-[#424245] hover:bg-[#f5f5f7]'}`}><Icons.TrendingUp /> Dashboard</button>
+              <button onClick={() => navigateTo('admin_orders')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-colors ${view === 'admin_orders' ? 'bg-[#1d1d1f] text-white' : 'text-[#424245] hover:bg-[#f5f5f7]'}`}><Icons.ClipboardList /> Manage Orders</button>
+              <button onClick={() => navigateTo('admin_quotes')} className={`w-full flex items-center justify-between px-4 py-2.5 rounded-2xl text-sm font-medium transition-colors ${view === 'admin_quotes' ? 'bg-[#1d1d1f] text-white' : 'text-[#424245] hover:bg-[#f5f5f7]'}`}>
                 <div className="flex items-center gap-3"><Icons.MessageSquare /> Manage Quotes</div>
-                {customRequests.filter(r=>r.status==='NEW').length > 0 && <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{customRequests.filter(r=>r.status==='NEW').length}</span>}
+                {customRequests.filter(r=>r.status==='NEW').length > 0 && <span className="bg-[#ff3b30] text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full">{customRequests.filter(r=>r.status==='NEW').length}</span>}
               </button>
-              <button onClick={() => navigateTo('admin_products')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_products' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Box /> Manage Products</button>
-              <button onClick={() => navigateTo('admin_promos')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium ${view === 'admin_promos' ? 'bg-blue-600 text-white' : 'hover:bg-slate-800 hover:text-white'}`}><Icons.Ticket /> Manage Promos</button>
+              <button onClick={() => navigateTo('admin_products')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-colors ${view === 'admin_products' ? 'bg-[#1d1d1f] text-white' : 'text-[#424245] hover:bg-[#f5f5f7]'}`}><Icons.Box /> Manage Products</button>
+              <button onClick={() => navigateTo('admin_promos')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-colors ${view === 'admin_promos' ? 'bg-[#1d1d1f] text-white' : 'text-[#424245] hover:bg-[#f5f5f7]'}`}><Icons.Ticket /> Manage Promos</button>
             </>
           )}
         </div>
 
-        <div className="p-4 border-t border-slate-800 bg-slate-950">
+        <div className="p-3 border-t border-slate-100">
           {user ? (
-            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-red-400 hover:bg-slate-800 hover:text-red-300"><Icons.LogOut /> Logout</button>
+            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium text-[#ff3b30] hover:bg-red-50 transition-colors"><Icons.LogOut /> Logout</button>
           ) : (
-            <button onClick={handleLogin} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-bold bg-blue-600 text-white hover:bg-blue-500"><Icons.LogIn /> Login</button>
+            <button onClick={handleLogin} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold bg-[#1d1d1f] text-white hover:bg-black transition-colors"><Icons.LogIn /> Login</button>
           )}
         </div>
       </div>
@@ -514,33 +514,33 @@ export default function App() {
   const TopHeader = () => {
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     return (
-      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 h-14 flex items-center justify-between px-4 sm:px-6 print:hidden">
+      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-slate-100 h-14 flex items-center justify-between px-4 sm:px-6 print:hidden">
         <div className="flex items-center gap-3">
-          <button onClick={() => setIsSidebarOpen(true)} className="md:hidden text-slate-600 p-2 -ml-2 rounded-lg hover:bg-slate-100"><Icons.Menu /></button>
+          <button onClick={() => setIsSidebarOpen(true)} className="md:hidden text-[#1d1d1f] p-2 -ml-2 rounded-full hover:bg-slate-100"><Icons.Menu /></button>
           <div className="md:hidden flex items-center gap-2">
             <img src={LOGO_URL} alt="Logo" className="w-7 h-7 object-contain" onError={(e) => e.target.style.display='none'} />
-            <span className="text-lg font-black tracking-tighter text-blue-600">3D<span className="text-slate-900">STORE</span></span>
+            <span className="text-base font-semibold tracking-tight text-[#1d1d1f]">3D<span className="text-[#86868b] font-normal">Store</span></span>
           </div>
-          <h2 className="hidden md:block text-lg font-black text-slate-800 capitalize tracking-wide">{view === 'home' ? 'Store' : view.replace('_', ' ')}</h2>
+          <h2 className="hidden md:block text-base font-semibold text-[#1d1d1f] capitalize tracking-tight">{view === 'home' ? 'Store' : view.replace('_', ' ')}</h2>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
            {user && (
              <div className="relative hidden md:block">
-               <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="text-sm font-bold text-slate-600 hover:text-blue-600 flex items-center gap-1.5 transition-colors">
+               <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="text-sm font-medium text-[#424245] hover:text-[#0071e3] flex items-center gap-1.5 transition-colors">
                  Hi, {user.name.split(' ')[0]} <Icons.ChevronDown />
                </button>
                {isProfileMenuOpen && (
-                 <div className="absolute right-0 mt-3 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
-                   <button onClick={() => {navigateTo('profile'); setIsProfileMenuOpen(false);}} className="w-full text-left px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 border-b border-slate-50 flex items-center gap-2"><Icons.User /> My Profile</button>
-                   <button onClick={() => {navigateTo('myorders'); setIsProfileMenuOpen(false);}} className="w-full text-left px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 border-b border-slate-50 flex items-center gap-2"><Icons.Orders /> My Orders</button>
-                   <button onClick={() => {handleLogout(); setIsProfileMenuOpen(false);}} className="w-full text-left px-4 py-3 text-xs font-bold text-red-500 hover:bg-red-50 flex items-center gap-2"><Icons.LogOut /> Logout</button>
+                 <div className="absolute right-0 mt-3 w-48 bg-white border border-slate-100 rounded-3xl shadow-xl shadow-slate-200/60 z-50 overflow-hidden">
+                   <button onClick={() => {navigateTo('profile'); setIsProfileMenuOpen(false);}} className="w-full text-left px-4 py-3 text-xs font-medium text-[#424245] hover:bg-[#f5f5f7] border-b border-slate-50 flex items-center gap-2"><Icons.User /> My Profile</button>
+                   <button onClick={() => {navigateTo('myorders'); setIsProfileMenuOpen(false);}} className="w-full text-left px-4 py-3 text-xs font-medium text-[#424245] hover:bg-[#f5f5f7] border-b border-slate-50 flex items-center gap-2"><Icons.Orders /> My Orders</button>
+                   <button onClick={() => {handleLogout(); setIsProfileMenuOpen(false);}} className="w-full text-left px-4 py-3 text-xs font-medium text-[#ff3b30] hover:bg-red-50 flex items-center gap-2"><Icons.LogOut /> Logout</button>
                  </div>
                )}
              </div>
            )}
-           <button onClick={() => navigateTo('cart')} className="relative p-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full">
+           <button onClick={() => navigateTo('cart')} className="relative p-2 text-[#1d1d1f] bg-[#f5f5f7] hover:bg-slate-200 rounded-full transition-colors">
              <Icons.Cart />
-             {cart.length > 0 && <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full shadow-sm">{cart.length}</span>}
+             {cart.length > 0 && <span className="absolute -top-1.5 -right-1.5 bg-[#ff3b30] text-white text-[10px] font-semibold w-5 h-5 flex items-center justify-center rounded-full shadow-sm">{cart.length}</span>}
            </button>
         </div>
       </div>
@@ -566,20 +566,20 @@ export default function App() {
     return (
       <div className="space-y-3 mb-6">
         {liveCampaigns.map(promo => (
-          <div key={promo.id} className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-600 via-red-500 to-amber-500 text-white shadow-md border border-red-700/20">
+          <div key={promo.id} className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-600 via-red-500 to-amber-500 text-white shadow-md border border-red-700/20">
             <div className="absolute right-[-10%] top-[-40%] w-40 h-40 opacity-20 pointer-events-none"><Icons.Sparkles /></div>
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4">
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 shrink-0"><Icons.Ticket /></div>
                 <div>
-                  <p className="font-black text-sm sm:text-base leading-tight">{promo.campaignName || 'Promosi Istimewa'}</p>
+                  <p className="font-semibold text-sm sm:text-base leading-tight">{promo.campaignName || 'Promosi Istimewa'}</p>
                   <p className="text-xs text-red-50/90 mt-0.5">
                     Diskaun {promo.type === 'percentage' ? `${promo.value}%` : `RM ${Number(promo.value).toFixed(2)}`} dengan kod di bawah
                     {promo.endDate ? ` — tamat ${new Date(promo.endDate).toLocaleDateString('en-GB')}` : ''}.
                   </p>
                 </div>
               </div>
-              <button onClick={() => handleCopyCode(promo.code)} className="flex items-center gap-2 bg-white/95 hover:bg-white text-red-700 font-black text-xs px-4 py-2.5 rounded-lg shadow-sm shrink-0 transition-colors">
+              <button onClick={() => handleCopyCode(promo.code)} className="flex items-center gap-2 bg-white/95 hover:bg-white text-red-700 font-semibold text-xs px-4 py-2.5 rounded-xl shadow-sm shrink-0 transition-colors">
                 <Icons.Copy /> {promo.code}
               </button>
             </div>
@@ -599,67 +599,71 @@ export default function App() {
     return (
       <div className="p-4 sm:p-6 lg:p-8">
         <PromoBanner />
-        <div className="bg-slate-900 text-white overflow-hidden relative rounded-2xl border border-slate-800 shadow-md h-64 md:h-80 flex items-center justify-center">
-          <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-500 via-slate-900 to-slate-900"></div>
-          <div className="absolute right-[-10%] top-[-20%] w-[350px] md:w-[500px] opacity-15 pointer-events-none mix-blend-screen">
+        <div className="bg-[#1d1d1f] text-white overflow-hidden relative rounded-3xl h-[340px] md:h-[440px] flex items-center justify-center">
+          <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-[#0071e3]/40 via-[#1d1d1f] to-[#1d1d1f]"></div>
+          <div className="absolute right-[-10%] top-[-20%] w-[350px] md:w-[500px] opacity-10 pointer-events-none mix-blend-screen">
             <img src={LOGO_URL} alt="Watermark" className="w-full h-full object-contain filter grayscale" onError={(e) => e.target.style.display='none'} />
           </div>
           <div className="absolute left-[-10%] bottom-[-20%] w-[250px] md:w-[350px] opacity-10 pointer-events-none mix-blend-screen">
             <img src={LOGO_URL} alt="Watermark" className="w-full h-full object-contain filter grayscale" onError={(e) => e.target.style.display='none'} />
           </div>
-          <div className="max-w-3xl px-6 relative z-10 text-center mx-auto">
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-4 drop-shadow-lg">PRINT • BUILD <br/><span className="text-blue-500">INNOVATE</span></h1>
-            <p className="text-slate-300 max-w-xl mx-auto text-xs md:text-sm drop-shadow-md">Premium 3D printing services and robotics components for makers, schools, and STEM projects.</p>
+          <div className="max-w-2xl px-6 relative z-10 text-center mx-auto">
+            <p className="text-[11px] md:text-xs font-semibold text-[#86868b] tracking-[0.2em] uppercase mb-4">3D Store Malaysia</p>
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.05] mb-5">Print. Build.<br/><span className="text-[#2997ff]">Innovate.</span></h1>
+            <p className="text-[#a1a1a6] max-w-lg mx-auto text-sm md:text-base leading-relaxed mb-8">Perkhidmatan cetakan 3D premium & komponen robotik untuk pereka, sekolah, dan projek STEM.</p>
+            <button onClick={() => document.getElementById('product-grid')?.scrollIntoView({ behavior: 'smooth' })} className="inline-flex items-center gap-1.5 bg-white text-[#1d1d1f] font-semibold text-sm px-7 py-3 rounded-full hover:bg-slate-100 transition-colors">
+              Beli Sekarang
+            </button>
           </div>
         </div>
 
-        <div className="py-6 mt-2">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <h2 className="text-lg font-black text-slate-900 w-full md:w-auto">All Products</h2>
-            <div className="relative w-full md:w-72">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400"><Icons.Search /></div>
+        <div id="product-grid" className="py-10 md:py-14">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <h2 className="text-2xl md:text-3xl font-semibold text-[#1d1d1f] tracking-tight w-full md:w-auto">Semua Produk</h2>
+            <div className="relative w-full md:w-80">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#86868b]"><Icons.Search /></div>
               <input 
-                type="text" placeholder="Search parts, 3D prints..." 
+                type="text" placeholder="Cari produk, 3D print..." 
                 value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2.5 w-full border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all bg-white"
+                className="pl-11 pr-4 py-3 w-full border border-slate-100 rounded-full text-sm outline-none focus:border-[#0071e3] focus:ring-4 focus:ring-[#0071e3]/10 transition-all bg-white placeholder:text-[#86868b]"
               />
             </div>
           </div>
 
           {filteredProducts.length === 0 ? (
-            <div className="p-8 bg-white border border-slate-200 rounded-xl text-slate-500 text-center">
+            <div className="p-10 bg-white border border-slate-100 rounded-3xl text-[#86868b] text-center text-sm">
               {searchTerm ? `Tiada produk dijumpai untuk carian "${searchTerm}".` : 'No products available at the moment.'}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {filteredProducts.map(product => (
-                <div key={product.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-                  <div className="relative aspect-square overflow-hidden bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100 cursor-pointer" onClick={() => navigateTo('product', product)}>
-                    <img src={product.image || 'https://placehold.co/400x400?text=No+Image'} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={product.name} className="w-full h-full object-contain hover:scale-105 transition-transform duration-300" />
-                    <div className="absolute top-2 left-2 bg-white/90 backdrop-blur text-[9px] font-bold px-2 py-1 rounded text-slate-700 uppercase tracking-wide border border-slate-200">{product.category}</div>
+                <div key={product.id} className="bg-white rounded-3xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/70 hover:-translate-y-0.5">
+                  <div className="relative aspect-square overflow-hidden bg-[#f5f5f7] flex items-center justify-center p-7 cursor-pointer" onClick={() => navigateTo('product', product)}>
+                    <img src={product.image || 'https://placehold.co/400x400?text=No+Image'} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={product.name} className="w-full h-full object-contain hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur text-[9px] font-semibold px-2.5 py-1 rounded-full text-[#424245] uppercase tracking-wide">{product.category}</div>
                     {product.originalPrice && product.originalPrice > product.price && (
-                      <div className="absolute top-2 right-2 bg-red-600 text-white text-[9px] font-black px-2 py-1 rounded uppercase tracking-widest shadow-sm">- SALE</div>
+                      <div className="absolute top-3 right-3 bg-[#ff3b30] text-white text-[9px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide shadow-sm">Sale</div>
                     )}
                   </div>
-                  <div className="p-4 flex-grow flex flex-col justify-between">
+                  <div className="p-5 flex-grow flex flex-col justify-between">
                     <div>
-                      <h3 className="font-bold text-slate-900 mb-1 leading-tight text-sm cursor-pointer hover:text-blue-600 transition-colors" onClick={() => navigateTo('product', product)}>{product.name}</h3>
-                      <p className="text-xs text-slate-500 mb-3 line-clamp-2">{product.description}</p>
+                      <h3 className="font-semibold text-[#1d1d1f] mb-1 leading-snug text-[15px] cursor-pointer hover:text-[#0071e3] transition-colors" onClick={() => navigateTo('product', product)}>{product.name}</h3>
+                      <p className="text-[13px] text-[#86868b] mb-4 line-clamp-2 leading-relaxed">{product.description}</p>
                     </div>
                     <div>
                       <div className="flex justify-between items-center mb-4">
                         <div className="flex flex-col">
                           {product.originalPrice && product.originalPrice > product.price ? (
-                            <><span className="text-xl font-black text-red-600">RM {product.price.toFixed(2)}</span><span className="text-[10px] font-bold text-slate-400 line-through">RM {product.originalPrice.toFixed(2)}</span></>
+                            <><span className="text-lg font-semibold text-[#ff3b30]">RM {product.price.toFixed(2)}</span><span className="text-[10px] font-medium text-[#86868b] line-through">RM {product.originalPrice.toFixed(2)}</span></>
                           ) : (
-                            <span className="text-xl font-black text-slate-900">RM {product.price.toFixed(2)}</span>
+                            <span className="text-lg font-semibold text-[#1d1d1f]">RM {product.price.toFixed(2)}</span>
                           )}
                         </div>
-                        <span className={`text-[9px] font-bold px-2 py-1 rounded uppercase tracking-wide ${product.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>{product.stock > 0 ? `Stock: ${product.stock}` : 'Sold Out'}</span>
+                        <span className={`text-[9px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide ${product.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>{product.stock > 0 ? `Stock: ${product.stock}` : 'Sold Out'}</span>
                       </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => navigateTo('product', product)} className="flex-1 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-md font-bold text-xs transition-colors flex justify-center items-center">Details</button>
-                        <button disabled={product.stock <= 0} onClick={() => { addToCart(product, 1); alert(`${product.name} berjaya ditambah ke troli!`); }} className={`flex-1 py-2.5 rounded-md font-bold text-xs text-white transition-colors flex justify-center items-center ${product.stock > 0 ? 'bg-blue-600 hover:bg-blue-700 shadow-sm' : 'bg-slate-300 cursor-not-allowed'}`}>Add to Cart</button>
+                      <div className="flex items-center justify-between gap-3">
+                        <button onClick={() => navigateTo('product', product)} className="text-xs font-medium text-[#0071e3] hover:underline shrink-0">Lihat Detail</button>
+                        <button disabled={product.stock <= 0} onClick={() => { addToCart(product, 1); alert(`${product.name} berjaya ditambah ke troli!`); }} className={`px-5 py-2.5 rounded-full font-semibold text-xs text-white transition-colors ${product.stock > 0 ? 'bg-[#1d1d1f] hover:bg-black' : 'bg-slate-300 cursor-not-allowed'}`}>Add to Cart</button>
                       </div>
                     </div>
                   </div>
@@ -691,28 +695,28 @@ export default function App() {
 
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-        <button onClick={() => navigateTo('home')} className="flex items-center text-slate-500 font-bold mb-4 text-sm gap-1 w-fit hover:text-blue-600 transition-colors"><Icons.ArrowLeft /> Back</button>
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row mb-8">
-          <div className="md:w-1/2 bg-slate-50 p-6 flex items-center justify-center border-b md:border-b-0 md:border-r border-slate-200">
-            <img src={selectedProduct.image} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={selectedProduct.name} className="w-full max-w-xs rounded-xl object-contain drop-shadow-md" />
+        <button onClick={() => navigateTo('home')} className="flex items-center text-slate-500 font-bold mb-4 text-sm gap-1 w-fit hover:text-[#0071e3] transition-colors"><Icons.ArrowLeft /> Back</button>
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col md:flex-row mb-8">
+          <div className="md:w-1/2 bg-slate-50 p-6 flex items-center justify-center border-b md:border-b-0 md:border-r border-slate-100">
+            <img src={selectedProduct.image} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={selectedProduct.name} className="w-full max-w-xs rounded-2xl object-contain drop-shadow-md" />
           </div>
           <div className="md:w-1/2 p-6 lg:p-10 flex flex-col justify-center">
             <div className="flex justify-between items-start mb-1">
-               <span className="text-blue-600 font-bold text-[10px] tracking-widest uppercase">{selectedProduct.category}</span>
+               <span className="text-[#0071e3] font-bold text-[10px] tracking-widest uppercase">{selectedProduct.category}</span>
                {productReviews.length > 0 && (
                  <div className="flex items-center gap-1 text-xs font-bold text-slate-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
                    <Icons.Star filled /> {avgRating} ({productReviews.length})
                  </div>
                )}
             </div>
-            <h1 className="text-2xl font-black text-slate-900 mb-3">{selectedProduct.name}</h1>
+            <h1 className="text-2xl font-semibold text-slate-900 mb-3">{selectedProduct.name}</h1>
             <p className="text-slate-600 text-sm mb-6 leading-relaxed">{selectedProduct.description}</p>
             <div className="mb-6 border-b border-slate-100 pb-6 flex justify-between items-center">
               <div className="flex flex-col">
                  {selectedProduct.originalPrice && selectedProduct.originalPrice > selectedProduct.price ? (
-                    <><span className="text-4xl font-black text-red-600">RM {selectedProduct.price.toFixed(2)}</span><span className="text-sm font-bold text-slate-400 line-through mt-1">Harga Asal: RM {selectedProduct.originalPrice.toFixed(2)}</span></>
+                    <><span className="text-4xl font-semibold text-red-600">RM {selectedProduct.price.toFixed(2)}</span><span className="text-sm font-bold text-slate-400 line-through mt-1">Harga Asal: RM {selectedProduct.originalPrice.toFixed(2)}</span></>
                   ) : (
-                    <span className="text-4xl font-black text-slate-900 block">RM {selectedProduct.price.toFixed(2)}</span>
+                    <span className="text-4xl font-semibold text-slate-900 block">RM {selectedProduct.price.toFixed(2)}</span>
                   )}
                 <span className="text-xs text-slate-400 font-bold mt-2 block">Berat: {selectedProduct.weight || 100}g / unit</span>
               </div>
@@ -721,25 +725,25 @@ export default function App() {
             <div className="space-y-5">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Quantity</label>
-                <div className="flex items-center border border-slate-200 rounded-lg w-28 bg-slate-50">
-                  <button onClick={() => setQty(Math.max(1, qty - 1))} className="p-2.5 text-slate-500 hover:text-blue-600"><Icons.Minus /></button>
+                <div className="flex items-center border border-slate-100 rounded-xl w-28 bg-slate-50">
+                  <button onClick={() => setQty(Math.max(1, qty - 1))} className="p-2.5 text-slate-500 hover:text-[#0071e3]"><Icons.Minus /></button>
                   <span className="flex-1 text-center font-bold text-sm">{qty}</span>
-                  <button onClick={() => setQty(Math.min(selectedProduct.stock, qty + 1))} className="p-2.5 text-slate-500 hover:text-blue-600"><Icons.Plus /></button>
+                  <button onClick={() => setQty(Math.min(selectedProduct.stock, qty + 1))} className="p-2.5 text-slate-500 hover:text-[#0071e3]"><Icons.Plus /></button>
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Notes</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows="2" className="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 transition-colors" placeholder="e.g. Senarai nama untuk nametag..."></textarea>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows="2" className="w-full border border-slate-100 rounded-xl p-2.5 text-sm outline-none focus:border-blue-500 transition-colors" placeholder="e.g. Senarai nama untuk nametag..."></textarea>
               </div>
-              <button onClick={() => { addToCart(selectedProduct, qty, notes); navigateTo('cart'); }} disabled={selectedProduct.stock <= 0} className={`w-full py-3.5 rounded-lg font-bold text-sm uppercase tracking-wide flex justify-center items-center gap-2 ${selectedProduct.stock > 0 ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}>
+              <button onClick={() => { addToCart(selectedProduct, qty, notes); navigateTo('cart'); }} disabled={selectedProduct.stock <= 0} className={`w-full py-3.5 rounded-full font-semibold text-sm flex justify-center items-center gap-2 transition-colors ${selectedProduct.stock > 0 ? 'bg-[#1d1d1f] hover:bg-black text-white shadow-md' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}>
                 <Icons.Cart /> {selectedProduct.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
               </button>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-           <h2 className="text-lg font-black text-slate-900 mb-4">Ulasan Pelanggan ({productReviews.length})</h2>
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
+           <h2 className="text-lg font-semibold text-slate-900 mb-4">Ulasan Pelanggan ({productReviews.length})</h2>
            {productReviews.length === 0 ? (
              <p className="text-sm text-slate-500 italic">Belum ada ulasan untuk produk ini.</p>
            ) : (
@@ -763,22 +767,22 @@ export default function App() {
 
   const CartView = () => (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-      <h1 className="text-xl font-black mb-6 text-slate-900">Shopping Cart</h1>
+      <h1 className="text-xl font-semibold mb-6 text-slate-900">Shopping Cart</h1>
       {cart.length === 0 ? (
-        <div className="bg-white p-10 rounded-2xl border border-slate-200 text-center">
+        <div className="bg-white p-10 rounded-3xl border border-slate-100 text-center">
           <p className="text-slate-500 mb-4 text-sm">Your cart is currently empty.</p>
-          <button onClick={() => navigateTo('home')} className="bg-blue-600 text-white px-6 py-2.5 rounded-md font-bold text-sm">Continue Shopping</button>
+          <button onClick={() => navigateTo('home')} className="bg-[#1d1d1f] hover:bg-black text-white px-6 py-3 rounded-full font-semibold text-sm transition-colors">Continue Shopping</button>
         </div>
       ) : (
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1 space-y-4">
             {cart.map((item) => (
-              <div key={item.cartItemId} className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div key={item.cartItemId} className="bg-white p-4 rounded-2xl border border-slate-100 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <img src={item.image} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={item.name} className="w-16 h-16 object-cover rounded bg-slate-50 border border-slate-100" />
                 <div className="flex-1 w-full">
                   <h3 className="font-bold text-slate-900 text-sm mb-1">{item.name}</h3>
                   <div className="flex gap-3 items-center">
-                    <p className="text-sm font-black text-blue-600">RM {item.price.toFixed(2)}</p>
+                    <p className="text-sm font-semibold text-[#0071e3]">RM {item.price.toFixed(2)}</p>
                     <p className="text-[10px] font-bold text-slate-400">{((item.weight || 100) * item.quantity)}g</p>
                   </div>
                   {item.notes && (
@@ -786,24 +790,24 @@ export default function App() {
                   )}
                 </div>
                 <div className="flex items-center justify-between w-full sm:w-auto gap-4 mt-2 sm:mt-0">
-                  <div className="flex items-center border border-slate-200 rounded-md bg-slate-50">
+                  <div className="flex items-center border border-slate-100 rounded-lg bg-slate-50">
                     <button onClick={() => updateQuantity(item.cartItemId, -1)} className="p-2 text-slate-500"><Icons.Minus /></button>
                     <span className="w-6 text-center font-bold text-xs">{item.quantity}</span>
                     <button onClick={() => updateQuantity(item.cartItemId, 1)} className="p-2 text-slate-500"><Icons.Plus /></button>
                   </div>
-                  <button onClick={() => removeFromCart(item.cartItemId)} className="p-2 text-red-500 bg-red-50 rounded-md hover:bg-red-100"><Icons.Trash /></button>
+                  <button onClick={() => removeFromCart(item.cartItemId)} className="p-2 text-red-500 bg-red-50 rounded-lg hover:bg-red-100"><Icons.Trash /></button>
                 </div>
               </div>
             ))}
           </div>
           <div className="lg:w-72">
-            <div className="bg-white p-5 rounded-xl border border-slate-200 sticky top-20">
+            <div className="bg-white p-5 rounded-2xl border border-slate-100 sticky top-20">
               <div className="space-y-2 border-b border-slate-100 pb-3 mb-3">
                 <div className="flex justify-between text-xs text-slate-500 font-medium"><span>Subtotal</span><span>RM {cartSubtotal.toFixed(2)}</span></div>
                 <div className="flex justify-between text-xs text-slate-500 font-medium"><span>Total Weight</span><span>{(cartTotalWeight / 1000).toFixed(2)} KG</span></div>
               </div>
-              <div className="flex justify-between mb-5 text-lg font-black text-slate-900"><span>Total</span><span>RM {cartSubtotal.toFixed(2)}</span></div>
-              <button onClick={() => navigateTo('checkout')} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-md font-bold text-xs uppercase tracking-wide transition-colors">Checkout</button>
+              <div className="flex justify-between mb-5 text-lg font-semibold text-slate-900"><span>Total</span><span>RM {cartSubtotal.toFixed(2)}</span></div>
+              <button onClick={() => navigateTo('checkout')} className="w-full bg-[#1d1d1f] hover:bg-black text-white py-3.5 rounded-full font-semibold text-sm transition-colors">Checkout</button>
             </div>
           </div>
         </div>
@@ -960,30 +964,30 @@ export default function App() {
 
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
-        <h1 className="text-xl font-black mb-6 text-slate-900">Checkout</h1>
+        <h1 className="text-xl font-semibold mb-6 text-slate-900">Checkout</h1>
         <form onSubmit={handleCheckoutSubmit} className="flex flex-col lg:flex-row gap-6">
-          <div className="flex-1 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 h-fit">
+          <div className="flex-1 bg-white p-5 sm:p-6 rounded-3xl border border-slate-100 h-fit">
             <h2 className="text-sm font-bold mb-4 border-b border-slate-100 pb-3">Shipping Information</h2>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Full Name *</label><input required name="name" defaultValue={user?.name || ''} className="w-full border border-slate-200 rounded p-2 text-sm outline-none" /></div>
-                <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Phone No *</label><input required name="phone" type="tel" defaultValue={userProfile?.phone || ''} className="w-full border border-slate-200 rounded p-2 text-sm outline-none" placeholder="0194155722" /></div>
+                <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Full Name *</label><input required name="name" defaultValue={user?.name || ''} className="w-full border border-slate-100 rounded p-2 text-sm outline-none" /></div>
+                <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Phone No *</label><input required name="phone" type="tel" defaultValue={userProfile?.phone || ''} className="w-full border border-slate-100 rounded p-2 text-sm outline-none" placeholder="0194155722" /></div>
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Region *</label>
-                <select required value={region} onChange={(e) => setRegion(e.target.value)} className="w-full border border-slate-200 rounded p-2 text-sm outline-none font-medium bg-white">
+                <select required value={region} onChange={(e) => setRegion(e.target.value)} className="w-full border border-slate-100 rounded p-2 text-sm outline-none font-medium bg-white">
                   <option value="" disabled>Select Region...</option>
                   <option value="Semenanjung">Peninsular Malaysia</option>
                   <option value="Sabah / Sarawak">Sabah & Sarawak</option>
                 </select>
               </div>
-              <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Full Address *</label><textarea required name="address" rows="3" defaultValue={userProfile?.address || ''} className="w-full border border-slate-200 rounded p-2 text-sm outline-none"></textarea></div>
+              <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Full Address *</label><textarea required name="address" rows="3" defaultValue={userProfile?.address || ''} className="w-full border border-slate-100 rounded p-2 text-sm outline-none"></textarea></div>
             </div>
             
             <div className="mt-8 border-t border-slate-100 pt-5">
                <h2 className="text-xs font-bold text-slate-800 mb-2 flex items-center gap-1.5"><Icons.Ticket /> Ada Kod Promo?</h2>
                <div className="flex gap-2">
-                 <input value={promoInput} onChange={e=>setPromoInput(e.target.value)} placeholder="Masukkan kod promo" className="border border-slate-200 rounded p-2 text-sm outline-none flex-1 uppercase" />
+                 <input value={promoInput} onChange={e=>setPromoInput(e.target.value)} placeholder="Masukkan kod promo" className="border border-slate-100 rounded p-2 text-sm outline-none flex-1 uppercase" />
                  <button type="button" onClick={handleApplyPromo} className="bg-slate-800 text-white px-4 py-2 rounded text-xs font-bold hover:bg-slate-700 transition-colors">Tebus</button>
                </div>
                {appliedPromo && <p className="text-green-600 text-[10px] font-bold mt-1.5">Kod '{appliedPromo.code}' berjaya digunakan!</p>}
@@ -991,28 +995,28 @@ export default function App() {
             </div>
           </div>
           <div className="lg:w-[350px]">
-            <div className="bg-slate-900 p-5 rounded-2xl text-white sticky top-20 border border-slate-800 shadow-md">
-              <h2 className="text-sm font-bold mb-4 border-b border-slate-800 pb-2">Payment Summary</h2>
+            <div className="bg-[#1d1d1f] p-5 rounded-3xl text-white sticky top-20 border border-[#2d2d2f] shadow-md">
+              <h2 className="text-sm font-bold mb-4 border-b border-[#2d2d2f] pb-2">Payment Summary</h2>
               <div className="space-y-2 mb-4 text-xs text-slate-400">
                 <div className="flex justify-between"><span>Subtotal</span><span>RM {cartSubtotal.toFixed(2)}</span></div>
                 <div className="flex justify-between"><span>Weight</span><span>{(cartTotalWeight / 1000).toFixed(2)} KG</span></div>
                 {discountAmount > 0 && <div className="flex justify-between text-green-400 font-bold"><span>Diskaun ({appliedPromo?.code})</span><span>- RM {discountAmount.toFixed(2)}</span></div>}
-                <div className="flex justify-between font-bold text-blue-400"><span>Shipping ({region || '...'})</span><span>{region ? `RM ${shippingFee.toFixed(2)}` : '-'}</span></div>
+                <div className="flex justify-between font-bold text-[#2997ff]"><span>Shipping ({region || '...'})</span><span>{region ? `RM ${shippingFee.toFixed(2)}` : '-'}</span></div>
               </div>
-              <div className="flex justify-between items-center mb-5 pb-5 border-b border-slate-800">
-                <span className="font-bold text-sm">Total Pay</span><span className="text-2xl font-black text-white">RM {grandTotal.toFixed(2)}</span>
+              <div className="flex justify-between items-center mb-5 pb-5 border-b border-[#2d2d2f]">
+                <span className="font-bold text-sm">Total Pay</span><span className="text-2xl font-semibold text-white">RM {grandTotal.toFixed(2)}</span>
               </div>
-              <div className="bg-white p-3 rounded-lg mb-5 text-center text-slate-900">
+              <div className="bg-white p-3 rounded-xl mb-5 text-center text-slate-900">
                 <p className="text-[9px] font-bold text-slate-500 mb-2 uppercase tracking-widest">Scan to Pay</p>
                 <img src={QR_PAYMENT_URL} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=No+QR'; }} className="w-32 h-32 mx-auto object-contain mb-1 rounded" />
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-800">Maybank MAE</p>
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-800">Maybank MAE</p>
               </div>
               <div className="mb-5">
                 <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wide">Upload Receipt *</label>
-                <input required type="file" name="receipt" accept="image/*,application/pdf" className="w-full border border-slate-700 rounded p-1.5 bg-slate-800 text-[10px] text-slate-300 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-blue-600 file:text-white" />
+                <input required type="file" name="receipt" accept="image/*,application/pdf" className="w-full border border-slate-700 rounded p-1.5 bg-slate-800 text-[10px] text-slate-300 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-black file:text-white" />
               </div>
               <div className="mb-4 flex justify-center"><ReCAPTCHA sitekey={RECAPTCHA_SITE_KEY} onChange={(value) => setCaptchaValue(value)} theme="dark" /></div>
-              <button disabled={isSubmitting || region === '' || !captchaValue} type="submit" className={`w-full py-3 rounded-md font-bold text-xs uppercase tracking-wide flex justify-center items-center gap-2 ${(region !== '' && captchaValue) ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}>
+              <button disabled={isSubmitting || region === '' || !captchaValue} type="submit" className={`w-full py-3.5 rounded-full font-semibold text-sm flex justify-center items-center gap-2 transition-colors ${(region !== '' && captchaValue) ? 'bg-white text-[#1d1d1f] hover:bg-slate-100 shadow-md' : 'bg-[#3a3a3c] text-[#86868b] cursor-not-allowed'}`}>
                 {isSubmitting ? 'Processing...' : `Confirm Order`}
               </button>
             </div>
@@ -1050,27 +1054,27 @@ export default function App() {
     if(!user) return null;
     return (
        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-          <h1 className="text-2xl font-black mb-6 text-slate-900">My Profile</h1>
-          <form onSubmit={saveProfile} className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+          <h1 className="text-2xl font-semibold mb-6 text-slate-900">My Profile</h1>
+          <form onSubmit={saveProfile} className="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-sm space-y-5">
              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-               <div><label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Nama Akaun Google</label><input disabled value={user.name} className="w-full border border-slate-200 bg-slate-50 rounded-lg p-3 outline-none text-slate-500 font-bold" /></div>
-               <div><label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Email</label><input disabled value={user.email} className="w-full border border-slate-200 bg-slate-50 rounded-lg p-3 outline-none text-slate-500 font-bold" /></div>
+               <div><label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Nama Akaun Google</label><input disabled value={user.name} className="w-full border border-slate-100 bg-slate-50 rounded-xl p-3 outline-none text-slate-500 font-bold" /></div>
+               <div><label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Email</label><input disabled value={user.email} className="w-full border border-slate-100 bg-slate-50 rounded-xl p-3 outline-none text-slate-500 font-bold" /></div>
              </div>
              <hr className="border-slate-100 my-4" />
              <p className="text-xs text-slate-500 font-medium mb-2">Maklumat di bawah akan digunakan secara automatik untuk penghantaran pesanan anda kelak.</p>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-               <div><label className="block text-xs font-bold text-slate-700 mb-1">No. Telefon</label><input name="phone" defaultValue={profileData.phone} className="w-full border border-slate-200 rounded-lg p-3 outline-none focus:border-blue-500" placeholder="Contoh: 0194155722" /></div>
+               <div><label className="block text-xs font-bold text-slate-700 mb-1">No. Telefon</label><input name="phone" defaultValue={profileData.phone} className="w-full border border-slate-100 rounded-xl p-3 outline-none focus:border-blue-500" placeholder="Contoh: 0194155722" /></div>
                <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Region Penghantaran</label>
-                  <select name="region" defaultValue={profileData.region} className="w-full border border-slate-200 rounded-lg p-3 outline-none font-medium bg-white focus:border-blue-500">
+                  <select name="region" defaultValue={profileData.region} className="w-full border border-slate-100 rounded-xl p-3 outline-none font-medium bg-white focus:border-blue-500">
                     <option value="">Sila Pilih...</option>
                     <option value="Semenanjung">Semenanjung Malaysia</option>
                     <option value="Sabah / Sarawak">Sabah & Sarawak</option>
                   </select>
                </div>
              </div>
-             <div><label className="block text-xs font-bold text-slate-700 mb-1">Alamat Penuh Penghantaran</label><textarea name="address" defaultValue={profileData.address} rows="3" placeholder="No Rumah, Jalan, Poskod, Daerah, Negeri" className="w-full border border-slate-200 rounded-lg p-3 outline-none focus:border-blue-500"></textarea></div>
-             <button disabled={saving} type="submit" className={`w-full text-white py-3.5 rounded-lg font-bold text-sm shadow-md transition-colors ${saving ? 'bg-slate-400' : 'bg-blue-600 hover:bg-blue-700'}`}>Simpan Tetapan Profil</button>
+             <div><label className="block text-xs font-bold text-slate-700 mb-1">Alamat Penuh Penghantaran</label><textarea name="address" defaultValue={profileData.address} rows="3" placeholder="No Rumah, Jalan, Poskod, Daerah, Negeri" className="w-full border border-slate-100 rounded-xl p-3 outline-none focus:border-blue-500"></textarea></div>
+             <button disabled={saving} type="submit" className={`w-full text-white py-3.5 rounded-xl font-bold text-sm shadow-md transition-colors ${saving ? 'bg-slate-400' : 'bg-black hover:bg-neutral-800'}`}>Simpan Tetapan Profil</button>
           </form>
        </div>
     );
@@ -1108,7 +1112,7 @@ export default function App() {
               return (
                 <div key={step} className="relative z-10 flex flex-col items-center gap-2">
                   <div className={`w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center border-2 text-[9px] md:text-[10px] font-bold transition-colors ${isActive ? 'bg-blue-500 border-blue-500 text-white shadow-md' : 'bg-white border-slate-300 text-slate-400'}`}>{isActive ? '✓' : idx + 1}</div>
-                  <span className={`absolute top-7 md:top-8 text-[8px] md:text-[9px] font-bold whitespace-nowrap ${isActive ? 'text-blue-600' : 'text-slate-400'}`}>{labels[idx]}</span>
+                  <span className={`absolute top-7 md:top-8 text-[8px] md:text-[9px] font-bold whitespace-nowrap ${isActive ? 'text-[#0071e3]' : 'text-slate-400'}`}>{labels[idx]}</span>
                 </div>
               );
             })}
@@ -1119,21 +1123,21 @@ export default function App() {
 
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 relative">
-        <h1 className="text-xl font-black mb-5 text-slate-900">My Orders</h1>
+        <h1 className="text-xl font-semibold mb-5 text-slate-900">My Orders</h1>
         {orders.length === 0 ? (
-          <div className="bg-white p-10 rounded-xl border border-slate-200 text-center"><p className="text-slate-500 text-sm">No orders found.</p></div>
+          <div className="bg-white p-10 rounded-2xl border border-slate-100 text-center"><p className="text-slate-500 text-sm">No orders found.</p></div>
         ) : (
           <div className="space-y-6">
             {orders.map(order => (
-              <div key={order.id} className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-sm">
+              <div key={order.id} className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm">
                 <div className="flex justify-between items-center pb-2 mb-2 gap-3">
                   <div>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Order ID</p>
-                    <p className="font-black text-blue-600 text-sm">{order.orderId}</p>
+                    <p className="font-semibold text-[#0071e3] text-sm">{order.orderId}</p>
                     <p className="text-[10px] text-slate-400">{new Date(order.date).toLocaleString('en-GB')}</p>
                   </div>
                   <div className="flex flex-col sm:items-end gap-2">
-                    <button onClick={() => navigateTo('receipt', order)} className="text-[10px] font-bold text-slate-500 flex items-center gap-1 hover:text-blue-600"><Icons.Printer /> Print Receipt</button>
+                    <button onClick={() => navigateTo('receipt', order)} className="text-[10px] font-bold text-slate-500 flex items-center gap-1 hover:text-[#0071e3]"><Icons.Printer /> Print Receipt</button>
                   </div>
                 </div>
 
@@ -1144,7 +1148,7 @@ export default function App() {
                   {order.items?.map((item, idx) => (
                     <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-700 mb-2 pb-2 border-b border-slate-50">
                       <div className="flex items-center gap-2">
-                         <span className="font-black text-blue-600 w-5">{item.quantity}x</span>
+                         <span className="font-semibold text-[#0071e3] w-5">{item.quantity}x</span>
                          <span className="font-medium">{item.name}</span>
                       </div>
                       {order.status === 'COMPLETED' && (
@@ -1154,20 +1158,20 @@ export default function App() {
                   ))}
                 </div>
 
-                <div className="bg-slate-50 p-3 rounded-lg flex flex-col md:flex-row justify-between items-center gap-3 border border-slate-100 mt-4">
+                <div className="bg-slate-50 p-3 rounded-xl flex flex-col md:flex-row justify-between items-center gap-3 border border-slate-100 mt-4">
                   <div>
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Maklumat Penghantaran</p>
                     {order.trackingNumber ? (
                       <div className="flex items-center gap-1.5 text-xs">
                         <Icons.Truck />
-                        <span className="font-bold text-slate-900">Tracking: <span className="text-blue-600">{order.trackingNumber}</span></span>
+                        <span className="font-bold text-slate-900">Tracking: <span className="text-[#0071e3]">{order.trackingNumber}</span></span>
                         {order.deliveryProofUrl && <a href={order.deliveryProofUrl} target="_blank" rel="noopener noreferrer" className="ml-1 text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold hover:bg-blue-200">Lihat Bukti</a>}
                       </div>
                     ) : <p className="text-[10px] font-medium text-slate-500 italic">Pesanan sedang diuruskan...</p>}
                   </div>
                   <div className="text-right w-full md:w-auto">
                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Total Bayaran</p>
-                    <p className="text-base font-black text-slate-900">RM {order.total.toFixed(2)}</p>
+                    <p className="text-base font-semibold text-slate-900">RM {order.total.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
@@ -1176,18 +1180,18 @@ export default function App() {
         )}
 
         {reviewModalOpen && (
-           <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-xl w-full max-w-sm flex flex-col shadow-2xl overflow-hidden p-6">
-                 <h2 className="font-black text-lg text-slate-900 mb-1">Beri Ulasan</h2>
+           <div className="fixed inset-0 bg-[#1d1d1f]/60 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl w-full max-w-sm flex flex-col shadow-2xl overflow-hidden p-6">
+                 <h2 className="font-semibold text-lg text-slate-900 mb-1">Beri Ulasan</h2>
                  <p className="text-xs text-slate-500 mb-5">{reviewModalOpen.name}</p>
                  <div className="flex gap-2 justify-center mb-6">
                     {[1,2,3,4,5].map(star => (
                        <button key={star} onClick={() => setStarRating(star)} className="focus:outline-none transform hover:scale-110 transition-transform"><Icons.Star filled={star <= starRating} /></button>
                     ))}
                  </div>
-                 <textarea value={reviewComment} onChange={e=>setReviewComment(e.target.value)} rows="3" placeholder="Kongsi pengalaman anda dengan produk ini..." className="w-full border border-slate-200 rounded p-3 text-sm outline-none focus:border-blue-500 mb-5"></textarea>
+                 <textarea value={reviewComment} onChange={e=>setReviewComment(e.target.value)} rows="3" placeholder="Kongsi pengalaman anda dengan produk ini..." className="w-full border border-slate-100 rounded p-3 text-sm outline-none focus:border-blue-500 mb-5"></textarea>
                  <div className="flex gap-2">
-                    <button onClick={submitReview} className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded text-sm hover:bg-blue-700 transition-colors">Hantar</button>
+                    <button onClick={submitReview} className="flex-1 bg-black text-white font-bold py-2.5 rounded text-sm hover:bg-neutral-800 transition-colors">Hantar</button>
                     <button onClick={() => setReviewModalOpen(null)} className="flex-1 bg-slate-100 text-slate-600 font-bold py-2.5 rounded text-sm hover:bg-slate-200 transition-colors">Batal</button>
                  </div>
               </div>
@@ -1229,33 +1233,33 @@ export default function App() {
 
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        <h1 className="text-2xl font-black text-slate-900">Dashboard Overview</h1>
+        <h1 className="text-2xl font-semibold text-slate-900">Dashboard Overview</h1>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10 text-blue-600"><Icons.TrendingUp /></div>
+          <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10 text-[#0071e3]"><Icons.TrendingUp /></div>
             <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Jualan Hari Ini</p>
-            <p className="text-2xl font-black text-blue-600 mt-1">RM {dailySales.toFixed(2)}</p>
+            <p className="text-2xl font-semibold text-[#0071e3] mt-1">RM {dailySales.toFixed(2)}</p>
           </div>
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+          <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
              <div className="absolute top-0 right-0 p-4 opacity-10 text-green-600"><Icons.TrendingUp /></div>
             <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Bulan Ini</p>
-            <p className="text-2xl font-black text-green-600 mt-1">RM {monthlySales.toFixed(2)}</p>
+            <p className="text-2xl font-semibold text-green-600 mt-1">RM {monthlySales.toFixed(2)}</p>
           </div>
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+          <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
              <div className="absolute top-0 right-0 p-4 opacity-10 text-slate-800"><Icons.TrendingUp /></div>
             <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Tahun Ini</p>
-            <p className="text-2xl font-black text-slate-800 mt-1">RM {yearlySales.toFixed(2)}</p>
+            <p className="text-2xl font-semibold text-slate-800 mt-1">RM {yearlySales.toFixed(2)}</p>
           </div>
-          <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 text-white shadow-md relative overflow-hidden">
+          <div className="bg-[#1d1d1f] p-5 rounded-3xl border border-[#2d2d2f] text-white shadow-md relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-20 text-red-500"><Icons.ClipboardList /></div>
             <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Pending Orders</p>
-            <p className="text-2xl font-black text-white mt-1">{pendingCount}</p>
-            <button onClick={()=>navigateTo('admin_orders')} className="mt-3 text-[10px] font-bold bg-white/10 px-3 py-1.5 rounded-lg w-full hover:bg-white/20 transition-colors">Urus Pesanan</button>
+            <p className="text-2xl font-semibold text-white mt-1">{pendingCount}</p>
+            <button onClick={()=>navigateTo('admin_orders')} className="mt-3 text-[10px] font-bold bg-white/10 px-3 py-1.5 rounded-xl w-full hover:bg-white/20 transition-colors">Urus Pesanan</button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
             <h2 className="text-sm font-bold text-slate-800 mb-6 flex items-center gap-2"><Icons.TrendingUp /> Jualan 7 Hari Terakhir</h2>
             <div className="h-72 w-full text-xs font-medium">
               <ResponsiveContainer width="100%" height="100%">
@@ -1271,27 +1275,27 @@ export default function App() {
           </div>
 
           <div className="space-y-6">
-             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+             <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
                <h2 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2 text-red-600"><Icons.AlertCircle /> Amaran Stok Rendah</h2>
                <div className="space-y-3">
                  {lowStockProducts.length === 0 ? <p className="text-xs text-slate-500 italic">Semua stok produk mencukupi.</p> : null}
                  {lowStockProducts.map(p => (
-                    <div key={p.id} className="flex justify-between items-center text-xs p-2 hover:bg-slate-50 rounded-lg cursor-pointer" onClick={() => navigateTo('admin_products')}>
+                    <div key={p.id} className="flex justify-between items-center text-xs p-2 hover:bg-slate-50 rounded-xl cursor-pointer" onClick={() => navigateTo('admin_products')}>
                        <span className="font-bold text-slate-700 truncate pr-2" title={p.name}>{p.name}</span>
-                       <span className={`font-black px-2 py-1 rounded-md whitespace-nowrap ${p.stock === 0 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{p.stock} unit</span>
+                       <span className={`font-semibold px-2 py-1 rounded-lg whitespace-nowrap ${p.stock === 0 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{p.stock} unit</span>
                     </div>
                  ))}
                </div>
              </div>
 
-             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                <h2 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2 text-blue-600"><Icons.Box /> Top 5 Paling Laris</h2>
+             <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+                <h2 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2 text-[#0071e3]"><Icons.Box /> Top 5 Paling Laris</h2>
                 <div className="space-y-2 text-xs">
                   {topProducts.length === 0 ? <p className="text-xs text-slate-500 italic">Belum ada data jualan.</p> : null}
                   {topProducts.map((p, idx) => (
-                     <div key={idx} className="flex justify-between items-center p-2 hover:bg-slate-50 rounded-lg">
+                     <div key={idx} className="flex justify-between items-center p-2 hover:bg-slate-50 rounded-xl">
                         <span className="font-bold text-slate-700 truncate pr-2">{idx+1}. {p[0]}</span>
-                        <span className="font-black text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded-md whitespace-nowrap">{p[1]} terjual</span>
+                        <span className="font-semibold text-[#0071e3] bg-blue-50 border border-blue-100 px-2 py-1 rounded-lg whitespace-nowrap">{p[1]} terjual</span>
                      </div>
                   ))}
                 </div>
@@ -1313,8 +1317,8 @@ export default function App() {
 
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <h1 className="text-xl font-black text-slate-900 mb-5">Manage Custom Quotes</h1>
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <h1 className="text-xl font-semibold text-slate-900 mb-5">Manage Custom Quotes</h1>
+        <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[9px] tracking-wider border-b border-slate-100">
@@ -1325,7 +1329,7 @@ export default function App() {
                 {customRequests.map((req) => (
                   <tr key={req.id}>
                     <td className="p-3 align-top">
-                      <span className="font-bold text-blue-600 block mb-0.5">{req.requestId}</span>
+                      <span className="font-bold text-[#0071e3] block mb-0.5">{req.requestId}</span>
                       <span className="text-[10px] text-slate-400">{new Date(req.date).toLocaleDateString('en-GB')}</span>
                     </td>
                     <td className="p-3 align-top">
@@ -1343,7 +1347,7 @@ export default function App() {
                       ) : <span className="text-[9px] text-slate-400 italic">Tiada Fail</span>}
                     </td>
                     <td className="p-3 align-top">
-                      <select value={req.status} onChange={(e) => updateQuoteStatus(req.id, e.target.value)} className={`w-28 mb-1.5 border rounded p-1.5 text-[10px] font-bold outline-none cursor-pointer ${req.status === 'NEW' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-slate-50 border-slate-200'}`}>
+                      <select value={req.status} onChange={(e) => updateQuoteStatus(req.id, e.target.value)} className={`w-28 mb-1.5 border rounded p-1.5 text-[10px] font-bold outline-none cursor-pointer ${req.status === 'NEW' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-slate-50 border-slate-100'}`}>
                         <option value="NEW">NEW (Baru)</option>
                         <option value="CONTACTED">DIHUBUNGI</option>
                         <option value="CLOSED">SELESAI</option>
@@ -1393,35 +1397,35 @@ export default function App() {
 
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <h1 className="text-xl font-black text-slate-900 mb-5">Manage Products</h1>
+        <h1 className="text-xl font-semibold text-slate-900 mb-5">Manage Products</h1>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 bg-white p-5 rounded-xl border border-slate-200 h-fit shadow-sm">
+            <div className="lg:col-span-1 bg-white p-5 rounded-2xl border border-slate-100 h-fit shadow-sm">
               <h2 className="font-bold text-sm mb-4 text-slate-800">{editingProduct ? 'Edit Product' : 'Add New Product'}</h2>
               <form key={editingProduct ? editingProduct.id : 'new'} onSubmit={handleAddOrUpdateProduct} className="space-y-3">
-                <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Item Name</label><input required name="name" defaultValue={editingProduct?.name || ''} className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" /></div>
+                <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Item Name</label><input required name="name" defaultValue={editingProduct?.name || ''} className="w-full border border-slate-100 rounded p-1.5 text-xs outline-none" /></div>
                 <div>
                   <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Category</label>
-                  <select name="category" defaultValue={editingProduct?.category || MOCK_CATEGORIES[0]} className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none">
+                  <select name="category" defaultValue={editingProduct?.category || MOCK_CATEGORIES[0]} className="w-full border border-slate-100 rounded p-1.5 text-xs outline-none">
                     {MOCK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-red-50 p-1.5 rounded border border-red-100"><label className="text-[9px] font-bold text-red-500 uppercase tracking-widest">Harga Jual</label><input required type="number" step="0.01" name="price" defaultValue={editingProduct?.price || ''} className="w-full border border-red-200 rounded p-1.5 text-xs outline-none" /></div>
-                  <div className="bg-slate-50 p-1.5 rounded border border-slate-100"><label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Harga Asal</label><input type="number" step="0.01" name="originalPrice" defaultValue={editingProduct?.originalPrice || ''} placeholder="Kosongkan jika tiada" className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" /></div>
+                  <div className="bg-slate-50 p-1.5 rounded border border-slate-100"><label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Harga Asal</label><input type="number" step="0.01" name="originalPrice" defaultValue={editingProduct?.originalPrice || ''} placeholder="Kosongkan jika tiada" className="w-full border border-slate-100 rounded p-1.5 text-xs outline-none" /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Stock</label><input required type="number" name="stock" defaultValue={editingProduct?.stock || ''} className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" /></div>
-                  <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Weight (g)</label><input required type="number" name="weight" placeholder="100" defaultValue={editingProduct?.weight || 100} className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" /></div>
+                  <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Stock</label><input required type="number" name="stock" defaultValue={editingProduct?.stock || ''} className="w-full border border-slate-100 rounded p-1.5 text-xs outline-none" /></div>
+                  <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Weight (g)</label><input required type="number" name="weight" placeholder="100" defaultValue={editingProduct?.weight || 100} className="w-full border border-slate-100 rounded p-1.5 text-xs outline-none" /></div>
                 </div>
-                <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Image URL</label><input required name="image" defaultValue={editingProduct?.image || ''} placeholder="https://..." className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none" /></div>
-                <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Description</label><textarea required name="description" defaultValue={editingProduct?.description || ''} rows="2" className="w-full border border-slate-200 rounded p-1.5 text-xs outline-none"></textarea></div>
+                <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Image URL</label><input required name="image" defaultValue={editingProduct?.image || ''} placeholder="https://..." className="w-full border border-slate-100 rounded p-1.5 text-xs outline-none" /></div>
+                <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Description</label><textarea required name="description" defaultValue={editingProduct?.description || ''} rows="2" className="w-full border border-slate-100 rounded p-1.5 text-xs outline-none"></textarea></div>
                 <div className="flex gap-2 pt-1">
-                  <button disabled={isAdding} type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded text-xs transition-colors">{isAdding ? 'Saving...' : (editingProduct ? 'Update' : 'Save')}</button>
-                  {editingProduct && <button type="button" onClick={() => setEditingProduct(null)} className="flex-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-bold py-2 rounded text-xs transition-colors">Cancel</button>}
+                  <button disabled={isAdding} type="submit" className="flex-1 bg-black hover:bg-neutral-800 text-white font-bold py-2 rounded text-xs transition-colors">{isAdding ? 'Saving...' : (editingProduct ? 'Update' : 'Save')}</button>
+                  {editingProduct && <button type="button" onClick={() => setEditingProduct(null)} className="flex-1 bg-slate-100 hover:bg-slate-200 border border-slate-100 text-slate-600 font-bold py-2 rounded text-xs transition-colors">Cancel</button>}
                 </div>
               </form>
             </div>
-            <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[9px] tracking-wider border-b border-slate-100">
                   <tr><th className="p-3">Product</th><th className="p-3">Price & Weight</th><th className="p-3">Stock</th><th className="p-3">Action</th></tr>
@@ -1434,14 +1438,14 @@ export default function App() {
                         <div><p className="font-bold text-slate-900 line-clamp-1">{p.name}</p><p className="text-[9px] font-bold uppercase text-slate-400">{p.category}</p></div>
                       </td>
                       <td className="p-3">
-                        <span className="font-bold text-blue-600 block">RM {p.price.toFixed(2)}</span>
+                        <span className="font-bold text-[#0071e3] block">RM {p.price.toFixed(2)}</span>
                         {p.originalPrice && p.originalPrice > p.price && <span className="text-[9px] text-slate-400 line-through block">RM {p.originalPrice.toFixed(2)}</span>}
                         <span className="text-[10px] text-slate-500">{p.weight || 100}g</span>
                       </td>
                       <td className="p-3"><span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${p.stock > 10 ? 'bg-green-100 text-green-700' : p.stock > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>{p.stock}</span></td>
                       <td className="p-3">
                         <div className="flex gap-1 w-16">
-                          <button onClick={() => setEditingProduct(p)} className="flex-1 bg-white hover:bg-slate-100 border border-slate-200 text-slate-500 p-1 rounded transition-colors"><Icons.Edit /></button>
+                          <button onClick={() => setEditingProduct(p)} className="flex-1 bg-white hover:bg-slate-100 border border-slate-100 text-slate-500 p-1 rounded transition-colors"><Icons.Edit /></button>
                           <button onClick={() => handleDeleteProduct(p.id)} className="flex-1 bg-red-50 hover:bg-red-100 border border-red-100 text-red-500 p-1 rounded transition-colors"><Icons.Trash /></button>
                         </div>
                       </td>
@@ -1500,31 +1504,31 @@ export default function App() {
 
     return (
        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-          <h1 className="text-xl font-black text-slate-900 mb-5">Manage Promo Codes</h1>
+          <h1 className="text-xl font-semibold text-slate-900 mb-5">Manage Promo Codes</h1>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-             <div className="lg:col-span-1 bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-fit">
+             <div className="lg:col-span-1 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm h-fit">
                 <h2 className="font-bold text-sm mb-4 text-slate-800">Cipta Kod Promo Baharu</h2>
                 <form onSubmit={handleAddPromo} className="space-y-3">
-                   <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Nama Kempen</label><input name="campaignName" placeholder="Cth: Promosi Merdeka" className="w-full border border-slate-200 rounded p-2 text-xs outline-none" /></div>
-                   <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">KOD PROMO</label><input required name="code" placeholder="Cth: MERDEKA10" className="w-full border border-slate-200 rounded p-2 text-xs outline-none uppercase" /></div>
+                   <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Nama Kempen</label><input name="campaignName" placeholder="Cth: Promosi Merdeka" className="w-full border border-slate-100 rounded p-2 text-xs outline-none" /></div>
+                   <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">KOD PROMO</label><input required name="code" placeholder="Cth: MERDEKA10" className="w-full border border-slate-100 rounded p-2 text-xs outline-none uppercase" /></div>
                    <div>
                       <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Jenis Diskaun</label>
-                      <select name="type" className="w-full border border-slate-200 rounded p-2 text-xs outline-none">
+                      <select name="type" className="w-full border border-slate-100 rounded p-2 text-xs outline-none">
                          <option value="fixed">RM (Tolak Jumlah Tepat)</option>
                          <option value="percentage">% (Tolak Peratusan)</option>
                       </select>
                    </div>
-                   <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Nilai Diskaun</label><input required type="number" step="0.01" name="value" placeholder="Cth: 10" className="w-full border border-slate-200 rounded p-2 text-xs outline-none" /></div>
+                   <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Nilai Diskaun</label><input required type="number" step="0.01" name="value" placeholder="Cth: 10" className="w-full border border-slate-100 rounded p-2 text-xs outline-none" /></div>
                    <div className="grid grid-cols-2 gap-2">
-                     <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Mula Kempen</label><input type="date" name="startDate" className="w-full border border-slate-200 rounded p-2 text-xs outline-none" /></div>
-                     <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Tamat Kempen</label><input type="date" name="endDate" className="w-full border border-slate-200 rounded p-2 text-xs outline-none" /></div>
+                     <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Mula Kempen</label><input type="date" name="startDate" className="w-full border border-slate-100 rounded p-2 text-xs outline-none" /></div>
+                     <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Tamat Kempen</label><input type="date" name="endDate" className="w-full border border-slate-100 rounded p-2 text-xs outline-none" /></div>
                    </div>
                    <p className="text-[9px] text-slate-400 italic">Kosongkan tarikh jika kod promo tiada had tempoh.</p>
-                   <button disabled={isAdding} type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded text-xs transition-colors mt-2">{isAdding ? 'Menyimpan...' : 'Cipta Kod'}</button>
+                   <button disabled={isAdding} type="submit" className="w-full bg-black hover:bg-neutral-800 text-white font-bold py-2 rounded text-xs transition-colors mt-2">{isAdding ? 'Menyimpan...' : 'Cipta Kod'}</button>
                 </form>
              </div>
 
-             <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+             <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                 <table className="w-full text-left text-sm whitespace-nowrap">
                    <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[9px] tracking-wider border-b border-slate-100">
                       <tr><th className="p-3 pl-5">Kod Promo</th><th className="p-3">Nilai Diskaun</th><th className="p-3">Tempoh Kempen</th><th className="p-3">Digunakan</th><th className="p-3">Status</th><th className="p-3">Tindakan</th></tr>
@@ -1534,7 +1538,7 @@ export default function App() {
                       {promos.map(promo => (
                          <tr key={promo.id}>
                             <td className="p-3 pl-5">
-                              <span className="font-black text-blue-600 block">{promo.code}</span>
+                              <span className="font-semibold text-[#0071e3] block">{promo.code}</span>
                               {promo.campaignName && <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{promo.campaignName}</span>}
                             </td>
                             <td className="p-3 font-bold text-slate-700">{promo.type === 'percentage' ? `${promo.value}%` : `RM ${promo.value.toFixed(2)}`}</td>
@@ -1558,21 +1562,21 @@ export default function App() {
       <div className="min-h-screen bg-slate-100 py-8 print:p-0 print:bg-white flex justify-center">
         <div className="w-full max-w-[210mm] relative">
           <div className="flex justify-between items-center mb-4 px-4 print:hidden">
-            <button onClick={() => navigateTo(user?.role === 'admin' ? 'admin_orders' : 'myorders')} className="flex items-center text-slate-500 font-bold gap-1 text-xs hover:text-blue-600 transition-colors"><Icons.ArrowLeft /> Back</button>
-            <button onClick={() => window.print()} className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 transition-colors shadow-md"><Icons.Printer /> Cetak / Save PDF</button>
+            <button onClick={() => navigateTo(user?.role === 'admin' ? 'admin_orders' : 'myorders')} className="flex items-center text-slate-500 font-bold gap-1 text-xs hover:text-[#0071e3] transition-colors"><Icons.ArrowLeft /> Back</button>
+            <button onClick={() => window.print()} className="bg-[#1d1d1f] hover:bg-slate-800 text-white px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition-colors shadow-md"><Icons.Printer /> Cetak / Save PDF</button>
           </div>
           
-          <div className="bg-white p-10 md:p-14 border border-slate-200 print:border-none shadow-lg print:shadow-none min-h-[297mm]">
+          <div className="bg-white p-10 md:p-14 border border-slate-100 print:border-none shadow-lg print:shadow-none min-h-[297mm]">
             <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6 mb-8">
               <div>
-                <h1 className="text-3xl font-black tracking-tighter text-blue-600">3D<span className="text-slate-900">STORE</span></h1>
+                <h1 className="text-3xl font-semibold tracking-tighter text-[#0071e3]">3D<span className="text-slate-900">STORE</span></h1>
                 <p className="text-slate-500 text-[10px] mt-1 uppercase tracking-widest font-bold">Kuala Krai, Kelantan</p>
                 <p className="text-slate-500 text-[10px]">Tel: {WHATSAPP_NUMBER}</p>
               </div>
               <div className="text-right">
-                <h2 className="text-2xl font-black text-slate-900 uppercase tracking-widest mb-2">Invoice</h2>
+                <h2 className="text-2xl font-semibold text-slate-900 uppercase tracking-widest mb-2">Invoice</h2>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">No. Pesanan</p>
-                <p className="text-sm font-black text-blue-600 mb-2">{selectedOrder.orderId}</p>
+                <p className="text-sm font-semibold text-[#0071e3] mb-2">{selectedOrder.orderId}</p>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Tarikh</p>
                 <p className="text-[10px] text-slate-600 font-medium">{new Date(selectedOrder.date).toLocaleString('en-GB')}</p>
               </div>
@@ -1581,13 +1585,13 @@ export default function App() {
             <div className="grid grid-cols-2 gap-8 mb-10">
                <div>
                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 border-b border-slate-100 pb-1">Dibilkan Kepada:</h3>
-                 <p className="font-black text-sm text-slate-900 mb-0.5">{selectedOrder.customerName}</p>
+                 <p className="font-semibold text-sm text-slate-900 mb-0.5">{selectedOrder.customerName}</p>
                  <p className="text-xs text-slate-600 mb-0.5 font-medium">{selectedOrder.phone}</p>
                  <p className="text-xs text-slate-600 leading-relaxed max-w-xs">{selectedOrder.address}</p>
                </div>
                <div className="text-right">
                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 border-b border-slate-100 pb-1">Status Penghantaran:</h3>
-                 <p className="text-xs font-black text-slate-900 uppercase tracking-widest bg-slate-100 inline-block px-2 py-1 rounded">{selectedOrder.status}</p>
+                 <p className="text-xs font-semibold text-slate-900 uppercase tracking-widest bg-slate-100 inline-block px-2 py-1 rounded">{selectedOrder.status}</p>
                  {selectedOrder.trackingNumber && (
                     <p className="text-xs text-slate-600 mt-2 font-medium">Tracking: <span className="font-bold">{selectedOrder.trackingNumber}</span></p>
                  )}
@@ -1595,7 +1599,7 @@ export default function App() {
             </div>
 
             <table className="w-full text-left mb-8 text-xs border-collapse">
-              <thead className="bg-slate-900 text-white text-[10px] uppercase tracking-wider">
+              <thead className="bg-[#1d1d1f] text-white text-[10px] uppercase tracking-wider">
                 <tr>
                    <th className="py-3 px-4 font-bold rounded-tl-lg">Keterangan Produk</th>
                    <th className="py-3 px-4 text-center font-bold">Kuantiti</th>
@@ -1603,7 +1607,7 @@ export default function App() {
                    <th className="py-3 px-4 text-right font-bold rounded-tr-lg">Jumlah (RM)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 border-b border-slate-200">
+              <tbody className="divide-y divide-slate-100 border-b border-slate-100">
                 {selectedOrder.items?.map((item, idx) => (
                   <tr key={idx} className="hover:bg-slate-50">
                     <td className="py-4 px-4">
@@ -1612,7 +1616,7 @@ export default function App() {
                     </td>
                     <td className="py-4 px-4 text-center font-bold">{item.quantity}</td>
                     <td className="py-4 px-4 text-right font-medium">{item.price.toFixed(2)}</td>
-                    <td className="py-4 px-4 text-right font-black text-slate-900">{(item.price * item.quantity).toFixed(2)}</td>
+                    <td className="py-4 px-4 text-right font-semibold text-slate-900">{(item.price * item.quantity).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1626,13 +1630,13 @@ export default function App() {
                    <div className="flex justify-between text-green-600 font-bold px-2"><span>Diskaun ({selectedOrder.promoCodeUsed}):</span><span>- RM {selectedOrder.discountAmount?.toFixed(2)}</span></div>
                 )}
                 
-                <div className="flex justify-between text-slate-500 font-medium px-2 pb-2 border-b border-slate-200"><span>Kos Penghantaran:</span><span>RM {selectedOrder.shippingFee?.toFixed(2)}</span></div>
+                <div className="flex justify-between text-slate-500 font-medium px-2 pb-2 border-b border-slate-100"><span>Kos Penghantaran:</span><span>RM {selectedOrder.shippingFee?.toFixed(2)}</span></div>
                 
-                <div className="flex justify-between text-lg font-black text-slate-900 pt-2 px-2 bg-slate-50 rounded-lg py-3"><span>Jumlah Keseluruhan:</span><span className="text-blue-600">RM {selectedOrder.total.toFixed(2)}</span></div>
+                <div className="flex justify-between text-lg font-semibold text-slate-900 pt-2 px-2 bg-slate-50 rounded-xl py-3"><span>Jumlah Keseluruhan:</span><span className="text-[#0071e3]">RM {selectedOrder.total.toFixed(2)}</span></div>
               </div>
             </div>
             
-            <div className="mt-16 pt-8 border-t border-slate-200 text-center text-[10px] text-slate-400 font-medium">
+            <div className="mt-16 pt-8 border-t border-slate-100 text-center text-[10px] text-slate-400 font-medium">
                <p>Terima kasih kerana menyokong perniagaan kami!</p>
                <p>Dokumen ini dijana secara berkomputer, tandatangan tidak diperlukan.</p>
             </div>
@@ -1647,35 +1651,35 @@ export default function App() {
       return (
         <div className="max-w-md mx-auto px-4 py-16 text-center">
           <p className="text-slate-500 text-sm mb-4">Tiada pesanan terkini dijumpai.</p>
-          <button onClick={() => navigateTo('home')} className="bg-blue-600 text-white px-6 py-2.5 rounded-md font-bold text-sm">Kembali ke Store</button>
+          <button onClick={() => navigateTo('home')} className="bg-black text-white px-6 py-2.5 rounded-lg font-bold text-sm">Kembali ke Store</button>
         </div>
       );
     }
 
     return (
       <div className="max-w-lg mx-auto px-4 sm:px-6 py-10 sm:py-16">
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-10 text-center">
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 sm:p-10 text-center">
           <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-5">
             <Icons.CheckCircle />
           </div>
-          <h1 className="text-xl font-black text-slate-900 mb-2">Pesanan Berjaya Dihantar!</h1>
+          <h1 className="text-xl font-semibold text-slate-900 mb-2">Pesanan Berjaya Dihantar!</h1>
           <p className="text-sm text-slate-500 mb-6">Terima kasih, {completedOrder.customerName}. Pesanan anda sedang disemak oleh admin kami.</p>
 
-          <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 mb-6 text-left space-y-2">
-            <div className="flex justify-between text-xs"><span className="text-slate-400 font-bold uppercase tracking-widest">Order ID</span><span className="font-black text-blue-600">{completedOrder.orderId}</span></div>
-            <div className="flex justify-between text-xs"><span className="text-slate-400 font-bold uppercase tracking-widest">Jumlah</span><span className="font-black text-slate-900">RM {completedOrder.total?.toFixed(2)}</span></div>
+          <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-6 text-left space-y-2">
+            <div className="flex justify-between text-xs"><span className="text-slate-400 font-bold uppercase tracking-widest">Order ID</span><span className="font-semibold text-[#0071e3]">{completedOrder.orderId}</span></div>
+            <div className="flex justify-between text-xs"><span className="text-slate-400 font-bold uppercase tracking-widest">Jumlah</span><span className="font-semibold text-slate-900">RM {completedOrder.total?.toFixed(2)}</span></div>
             <div className="flex justify-between text-xs"><span className="text-slate-400 font-bold uppercase tracking-widest">Status</span><span className="font-bold text-amber-600">PENDING</span></div>
           </div>
 
           <p className="text-xs text-slate-500 mb-5">Sila hantar bukti bayaran melalui WhatsApp jika tetingkap tidak terbuka secara automatik.</p>
 
           <div className="flex flex-col sm:flex-row gap-2">
-            <a href={completedOrder.waLink} target="_blank" rel="noopener noreferrer" className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 transition-colors">
+            <a href={completedOrder.waLink} target="_blank" rel="noopener noreferrer" className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 transition-colors">
               <Icons.WhatsApp /> Hubungi via WhatsApp
             </a>
-            <button onClick={() => navigateTo('myorders')} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-lg font-bold text-xs uppercase tracking-wide transition-colors">Lihat Pesanan Saya</button>
+            <button onClick={() => navigateTo('myorders')} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold text-xs uppercase tracking-wide transition-colors">Lihat Pesanan Saya</button>
           </div>
-          <button onClick={() => navigateTo('home')} className="mt-3 text-xs font-bold text-slate-400 hover:text-blue-600 transition-colors">Kembali ke Store</button>
+          <button onClick={() => navigateTo('home')} className="mt-3 text-xs font-bold text-slate-400 hover:text-[#0071e3] transition-colors">Kembali ke Store</button>
         </div>
       </div>
     );
@@ -1723,11 +1727,11 @@ export default function App() {
       return (
         <div className="max-w-lg mx-auto px-4 sm:px-6 py-16 text-center">
           <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-5"><Icons.CheckCircle /></div>
-          <h1 className="text-xl font-black text-slate-900 mb-2">Permintaan Berjaya Dihantar!</h1>
+          <h1 className="text-xl font-semibold text-slate-900 mb-2">Permintaan Berjaya Dihantar!</h1>
           <p className="text-sm text-slate-500 mb-6">Kami akan menghubungi anda dengan sebutharga tidak lama lagi.</p>
           <div className="flex gap-2 justify-center">
-            <button onClick={() => setSubmitted(false)} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-md font-bold text-xs">Hantar Lagi</button>
-            <button onClick={() => navigateTo('home')} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-md font-bold text-xs">Kembali ke Store</button>
+            <button onClick={() => setSubmitted(false)} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-lg font-bold text-xs">Hantar Lagi</button>
+            <button onClick={() => navigateTo('home')} className="bg-black hover:bg-neutral-800 text-white px-5 py-2.5 rounded-lg font-bold text-xs">Kembali ke Store</button>
           </div>
         </div>
       );
@@ -1735,27 +1739,27 @@ export default function App() {
 
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-        <h1 className="text-xl font-black mb-1 text-slate-900">Custom 3D Print</h1>
+        <h1 className="text-xl font-semibold mb-1 text-slate-900">Custom 3D Print</h1>
         <p className="text-sm text-slate-500 mb-6">Ada idea atau fail sendiri? Hantar keterangan dan kami akan berikan sebutharga percuma.</p>
 
-        <form onSubmit={handleSubmitRequest} className="bg-white p-5 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+        <form onSubmit={handleSubmitRequest} className="bg-white p-5 sm:p-8 rounded-3xl border border-slate-100 shadow-sm space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Nama Penuh *</label><input required name="name" defaultValue={user?.name || ''} className="w-full border border-slate-200 rounded p-2.5 text-sm outline-none focus:border-blue-500" /></div>
-            <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">No. Telefon *</label><input required name="phone" type="tel" placeholder="0194155722" className="w-full border border-slate-200 rounded p-2.5 text-sm outline-none focus:border-blue-500" /></div>
+            <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Nama Penuh *</label><input required name="name" defaultValue={user?.name || ''} className="w-full border border-slate-100 rounded p-2.5 text-sm outline-none focus:border-blue-500" /></div>
+            <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">No. Telefon *</label><input required name="phone" type="tel" placeholder="0194155722" className="w-full border border-slate-100 rounded p-2.5 text-sm outline-none focus:border-blue-500" /></div>
           </div>
           {!user && (
-            <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Email</label><input name="email" type="email" placeholder="contoh@email.com" className="w-full border border-slate-200 rounded p-2.5 text-sm outline-none focus:border-blue-500" /></div>
+            <div><label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Email</label><input name="email" type="email" placeholder="contoh@email.com" className="w-full border border-slate-100 rounded p-2.5 text-sm outline-none focus:border-blue-500" /></div>
           )}
           <div>
             <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Keterangan Projek *</label>
-            <textarea required name="description" rows="5" placeholder="Terangkan apa yang anda mahu cetak: saiz, warna, kuantiti, tarikh diperlukan, dsb." className="w-full border border-slate-200 rounded p-2.5 text-sm outline-none focus:border-blue-500"></textarea>
+            <textarea required name="description" rows="5" placeholder="Terangkan apa yang anda mahu cetak: saiz, warna, kuantiti, tarikh diperlukan, dsb." className="w-full border border-slate-100 rounded p-2.5 text-sm outline-none focus:border-blue-500"></textarea>
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wide">Muat Naik Fail (STL / Gambar / PDF)</label>
-            <input type="file" name="file" accept=".stl,.obj,image/*,application/pdf" className="w-full border border-slate-200 rounded-lg p-1.5 text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white" />
+            <input type="file" name="file" accept=".stl,.obj,image/*,application/pdf" className="w-full border border-slate-100 rounded-xl p-1.5 text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-black file:text-white" />
             <p className="text-[10px] text-slate-400 mt-1">Pilihan sahaja — anda juga boleh terangkan idea anda dalam teks di atas.</p>
           </div>
-          <button disabled={isSubmitting} type="submit" className={`w-full py-3.5 rounded-lg font-bold text-sm uppercase tracking-wide text-white shadow-md transition-colors ${isSubmitting ? 'bg-slate-400' : 'bg-blue-600 hover:bg-blue-700'}`}>
+          <button disabled={isSubmitting} type="submit" className={`w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wide text-white shadow-md transition-colors ${isSubmitting ? 'bg-slate-400' : 'bg-black hover:bg-neutral-800'}`}>
             {isSubmitting ? 'Menghantar...' : 'Hantar Permintaan Sebutharga'}
           </button>
         </form>
@@ -1805,13 +1809,13 @@ export default function App() {
 
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-        <h1 className="text-xl font-black mb-1 text-slate-900">Polisi & Soalan Lazim</h1>
+        <h1 className="text-xl font-semibold mb-1 text-slate-900">Polisi & Soalan Lazim</h1>
         <p className="text-sm text-slate-500 mb-6">Semua yang anda perlu tahu sebelum membuat pesanan.</p>
 
         <div className="space-y-4">
           {sections.map((sec, idx) => (
-            <div key={idx} className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-              <h2 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2 text-blue-600">{sec.icon} {sec.title}</h2>
+            <div key={idx} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+              <h2 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2 text-[#0071e3]">{sec.icon} {sec.title}</h2>
               <ul className="space-y-1.5 list-disc list-inside">
                 {sec.content.map((line, lineIdx) => (
                   <li key={lineIdx} className="text-xs text-slate-600 leading-relaxed">{line}</li>
@@ -1820,12 +1824,12 @@ export default function App() {
             </div>
           ))}
 
-          <div className="bg-slate-900 text-white rounded-xl p-5 flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div className="bg-[#1d1d1f] text-white rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-center gap-3">
             <div>
               <h2 className="text-sm font-bold mb-1">Ada soalan lain?</h2>
               <p className="text-xs text-slate-400">Hubungi kami terus melalui WhatsApp, kami sedia membantu.</p>
             </div>
-            <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="bg-green-500 hover:bg-green-600 text-white px-4 py-2.5 rounded-lg font-bold text-xs flex items-center gap-2 whitespace-nowrap transition-colors"><Icons.WhatsApp /> WhatsApp Kami</a>
+            <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="bg-green-500 hover:bg-green-600 text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 whitespace-nowrap transition-colors"><Icons.WhatsApp /> WhatsApp Kami</a>
           </div>
         </div>
       </div>
@@ -1833,7 +1837,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col md:flex-row relative">
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f] font-sans flex flex-col md:flex-row relative">
       {view !== 'receipt' && <Sidebar />}
       <main className={`flex-1 min-h-screen ${view !== 'receipt' ? 'md:ml-64 pb-24' : ''}`}>
         {view !== 'receipt' && <TopHeader />}
