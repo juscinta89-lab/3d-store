@@ -591,28 +591,70 @@ export default function App() {
 
   const HomeView = () => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [heroMounted, setHeroMounted] = useState(false);
+    const [heroTilt, setHeroTilt] = useState({ x: 0, y: 0 });
     const filteredProducts = products.filter(product => 
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
       product.category.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    useEffect(() => {
+      const t = setTimeout(() => setHeroMounted(true), 60);
+      return () => clearTimeout(t);
+    }, []);
+
+    const handleHeroMouseMove = (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+      setHeroTilt({ x, y });
+    };
+    const handleHeroMouseLeave = () => setHeroTilt({ x: 0, y: 0 });
+
     return (
       <div className="p-4 sm:p-6 lg:p-8">
+        <style>{`
+          @keyframes floatSlow { 0%,100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-14px) rotate(2deg); } }
+          @keyframes floatSlowReverse { 0%,100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(12px) rotate(-2deg); } }
+          @keyframes pingSlow { 0% { transform: scale(1); opacity: 0.35; } 70%, 100% { transform: scale(1.6); opacity: 0; } }
+          .animate-float-slow { animation: floatSlow 6s ease-in-out infinite; }
+          .animate-float-slow-reverse { animation: floatSlowReverse 7s ease-in-out infinite; }
+          .animate-ping-slow { animation: pingSlow 2.4s cubic-bezier(0,0,0.2,1) infinite; }
+        `}</style>
         <PromoBanner />
-        <div className="bg-[#1d1d1f] text-white overflow-hidden relative rounded-3xl h-[340px] md:h-[440px] flex items-center justify-center">
+        <div 
+          onMouseMove={handleHeroMouseMove}
+          onMouseLeave={handleHeroMouseLeave}
+          className="bg-[#1d1d1f] text-white overflow-hidden relative rounded-3xl h-[340px] md:h-[440px] flex items-center justify-center"
+        >
           <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-[#0071e3]/40 via-[#1d1d1f] to-[#1d1d1f]"></div>
-          <div className="absolute right-[-10%] top-[-20%] w-[350px] md:w-[500px] opacity-10 pointer-events-none mix-blend-screen">
-            <img src={LOGO_URL} alt="Watermark" className="w-full h-full object-contain filter grayscale" onError={(e) => e.target.style.display='none'} />
+          <div 
+            className="absolute right-[-10%] top-[-20%] w-[350px] md:w-[500px] opacity-10 pointer-events-none mix-blend-screen transition-transform duration-300 ease-out"
+            style={{ transform: `translate(${heroTilt.x * 14}px, ${heroTilt.y * 14}px)` }}
+          >
+            <div className="animate-float-slow">
+              <img src={LOGO_URL} alt="Watermark" className="w-full h-full object-contain filter grayscale" onError={(e) => e.target.style.display='none'} />
+            </div>
           </div>
-          <div className="absolute left-[-10%] bottom-[-20%] w-[250px] md:w-[350px] opacity-10 pointer-events-none mix-blend-screen">
-            <img src={LOGO_URL} alt="Watermark" className="w-full h-full object-contain filter grayscale" onError={(e) => e.target.style.display='none'} />
+          <div 
+            className="absolute left-[-10%] bottom-[-20%] w-[250px] md:w-[350px] opacity-10 pointer-events-none mix-blend-screen transition-transform duration-300 ease-out"
+            style={{ transform: `translate(${heroTilt.x * -10}px, ${heroTilt.y * -10}px)` }}
+          >
+            <div className="animate-float-slow-reverse">
+              <img src={LOGO_URL} alt="Watermark" className="w-full h-full object-contain filter grayscale" onError={(e) => e.target.style.display='none'} />
+            </div>
           </div>
           <div className="max-w-2xl px-6 relative z-10 text-center mx-auto">
-            <p className="text-[11px] md:text-xs font-semibold text-[#86868b] tracking-[0.2em] uppercase mb-4">3D Store Malaysia</p>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.05] mb-5">Print. Build.<br/><span className="text-[#2997ff]">Innovate.</span></h1>
-            <p className="text-[#a1a1a6] max-w-lg mx-auto text-sm md:text-base leading-relaxed mb-8">Perkhidmatan cetakan 3D premium & komponen robotik untuk pereka, sekolah, dan projek STEM.</p>
-            <button onClick={() => document.getElementById('product-grid')?.scrollIntoView({ behavior: 'smooth' })} className="inline-flex items-center gap-1.5 bg-white text-[#1d1d1f] font-semibold text-sm px-7 py-3 rounded-full hover:bg-slate-100 transition-colors">
-              Beli Sekarang
+            <p className={`text-[11px] md:text-xs font-semibold text-[#86868b] tracking-[0.2em] uppercase mb-4 transition-all duration-700 ease-out ${heroMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}>3D Store Malaysia</p>
+            <h1 className={`text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.05] mb-5 transition-all duration-700 ease-out delay-100 ${heroMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>Print. Build.<br/><span className="text-[#2997ff]">Innovate.</span></h1>
+            <p className={`text-[#a1a1a6] max-w-lg mx-auto text-sm md:text-base leading-relaxed mb-8 transition-all duration-700 ease-out delay-200 ${heroMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>Perkhidmatan cetakan 3D premium & komponen robotik untuk pereka, sekolah, dan projek STEM.</p>
+            <button 
+              onClick={() => document.getElementById('product-grid')?.scrollIntoView({ behavior: 'smooth' })} 
+              className={`relative inline-flex items-center gap-1.5 bg-white text-[#1d1d1f] font-semibold text-sm px-7 py-3 rounded-full hover:bg-slate-100 hover:scale-105 active:scale-95 transition-all duration-300 ease-out ${heroMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+              style={{ transitionDelay: heroMounted ? '300ms' : '0ms' }}
+            >
+              <span className="absolute inset-0 rounded-full bg-white animate-ping-slow"></span>
+              <span className="relative">Beli Sekarang</span>
             </button>
           </div>
         </div>
