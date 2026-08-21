@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth, googleProvider, storage } from './firebase';
 import { 
-  collection, getDocs, addDoc, updateDoc, doc, deleteDoc, onSnapshot, query, orderBy, increment, where, setDoc, getDoc 
+  collection, getDocs, addDoc, updateDoc, doc, deleteDoc, onSnapshot, query, orderBy, increment, where, setDoc, getDoc, arrayUnion 
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
@@ -49,7 +49,8 @@ const Icons = {
   AlertCircle: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>,
   Copy: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>,
   Star: ({ filled }) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill={filled ? "#eab308" : "none"} stroke={filled ? "#eab308" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>,
-  Ticket: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><line x1="13" y1="5" x2="13" y2="19"></line></svg>
+  Ticket: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><line x1="13" y1="5" x2="13" y2="19"></line></svg>,
+  Sparkles: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"></path></svg>
 };
 
 const MOCK_CATEGORIES = ['3D PRINT', 'ROBOT PARTS', 'ELECTRONICS', 'STEM / EDUCATION', 'CUSTOM 3D PRINT'];
@@ -62,6 +63,7 @@ export default function App() {
   const [orders, setOrders] = useState([]);
   const [customRequests, setCustomRequests] = useState([]); 
   const [promos, setPromos] = useState([]); 
+  const [activePromos, setActivePromos] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null); 
   const [completedOrder, setCompletedOrder] = useState(null);
@@ -88,6 +90,15 @@ export default function App() {
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const productsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setProducts(productsData);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch Active Promo Codes (public - powers the homepage banner for everyone, logged in or not)
+  useEffect(() => {
+    const qActivePromos = query(collection(db, "promo_codes"), where("isActive", "==", true));
+    const unsubscribe = onSnapshot(qActivePromos, (snapshot) => {
+      setActivePromos(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
     return () => unsubscribe();
   }, []);
@@ -285,6 +296,48 @@ export default function App() {
     );
   };
 
+  // Reusable homepage banner announcing any live promo campaigns (e.g. Merdeka sale)
+  const PromoBanner = () => {
+    const now = new Date();
+    const liveCampaigns = activePromos.filter(p => {
+      if (p.startDate && new Date(p.startDate) > now) return false;
+      if (p.endDate && new Date(p.endDate) < now) return false;
+      return true;
+    });
+
+    if (liveCampaigns.length === 0) return null;
+
+    const handleCopyCode = (code) => {
+      navigator.clipboard.writeText(code);
+      alert(`Kod "${code}" disalin! Tampal semasa checkout.`);
+    };
+
+    return (
+      <div className="space-y-3 mb-6">
+        {liveCampaigns.map(promo => (
+          <div key={promo.id} className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-600 via-red-500 to-amber-500 text-white shadow-md border border-red-700/20">
+            <div className="absolute right-[-10%] top-[-40%] w-40 h-40 opacity-20 pointer-events-none"><Icons.Sparkles /></div>
+            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 shrink-0"><Icons.Ticket /></div>
+                <div>
+                  <p className="font-black text-sm sm:text-base leading-tight">{promo.campaignName || 'Promosi Istimewa'}</p>
+                  <p className="text-xs text-red-50/90 mt-0.5">
+                    Diskaun {promo.type === 'percentage' ? `${promo.value}%` : `RM ${Number(promo.value).toFixed(2)}`} dengan kod di bawah
+                    {promo.endDate ? ` — tamat ${new Date(promo.endDate).toLocaleDateString('en-GB')}` : ''}.
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => handleCopyCode(promo.code)} className="flex items-center gap-2 bg-white/95 hover:bg-white text-red-700 font-black text-xs px-4 py-2.5 rounded-lg shadow-sm shrink-0 transition-colors">
+                <Icons.Copy /> {promo.code}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const HomeView = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const filteredProducts = products.filter(product => 
@@ -294,6 +347,7 @@ export default function App() {
 
     return (
       <div className="p-4 sm:p-6 lg:p-8">
+        <PromoBanner />
         <div className="bg-slate-900 text-white overflow-hidden relative rounded-2xl border border-slate-800 shadow-md h-64 md:h-80 flex items-center justify-center">
           <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-500 via-slate-900 to-slate-900"></div>
           <div className="absolute right-[-10%] top-[-20%] w-[350px] md:w-[500px] opacity-15 pointer-events-none mix-blend-screen">
@@ -528,21 +582,50 @@ export default function App() {
 
     const handleApplyPromo = async () => {
        if(!promoInput) return;
+
+       if(!user) {
+          alert("Sila log masuk dahulu untuk menggunakan kod promo.");
+          return;
+       }
+
        const q = query(collection(db, "promo_codes"), where("code", "==", promoInput.toUpperCase()));
        const snap = await getDocs(q);
-       if(!snap.empty) {
-          const promoData = snap.docs[0].data();
-          if(promoData.isActive) {
-             setAppliedPromo(promoData);
-             alert("Kod Promo Berjaya Digunakan!");
-          } else {
-             alert("Maaf, kod promo ini tidak lagi aktif.");
-             setAppliedPromo(null);
-          }
-       } else {
+       if(snap.empty) {
           alert("Maaf, kod promo tidak sah.");
           setAppliedPromo(null);
+          return;
        }
+
+       const promoDocSnap = snap.docs[0];
+       const promoData = { id: promoDocSnap.id, ...promoDocSnap.data() };
+
+       if(!promoData.isActive) {
+          alert("Maaf, kod promo ini tidak lagi aktif.");
+          setAppliedPromo(null);
+          return;
+       }
+
+       const now = new Date();
+       if(promoData.startDate && new Date(promoData.startDate) > now) {
+          alert("Kod promo ini belum bermula lagi.");
+          setAppliedPromo(null);
+          return;
+       }
+       if(promoData.endDate && new Date(promoData.endDate) < now) {
+          alert("Maaf, kempen kod promo ini telah tamat.");
+          setAppliedPromo(null);
+          return;
+       }
+
+       const alreadyUsed = (promoData.usedBy || []).includes(user.email);
+       if(alreadyUsed) {
+          alert("Anda sudah pernah guna kod promo ini sebelum ini. Setiap pelanggan hanya boleh guna sekali sahaja.");
+          setAppliedPromo(null);
+          return;
+       }
+
+       setAppliedPromo(promoData);
+       alert("Kod Promo Berjaya Digunakan!");
     };
 
     let shippingFee = 0;
@@ -596,6 +679,11 @@ export default function App() {
         
         await addDoc(collection(db, "orders"), orderData);
         for (const item of cart) { await updateDoc(doc(db, "products", item.id), { stock: increment(-item.quantity) }); }
+
+        // Lock the promo code to this user so it can't be reused
+        if (appliedPromo && user?.email) {
+          try { await updateDoc(doc(db, "promo_codes", appliedPromo.id), { usedBy: arrayUnion(user.email) }); } catch (err) {}
+        }
         
         if (TELEGRAM_BOT_TOKEN !== "LETAK_TOKEN_BOT_DI_SINI") {
           const telegramMessage = `🚨 *ORDER BARU MASUK!*\n\n*ID:* \`${orderId}\`\n*Pelanggan:* ${orderData.customerName}\n*Total:* RM ${grandTotal.toFixed(2)}`;
@@ -648,6 +736,7 @@ export default function App() {
                  <button type="button" onClick={handleApplyPromo} className="bg-slate-800 text-white px-4 py-2 rounded text-xs font-bold hover:bg-slate-700 transition-colors">Tebus</button>
                </div>
                {appliedPromo && <p className="text-green-600 text-[10px] font-bold mt-1.5">Kod '{appliedPromo.code}' berjaya digunakan!</p>}
+               {!user && <p className="text-slate-400 text-[10px] font-medium mt-1.5">Log masuk diperlukan untuk menebus kod promo.</p>}
             </div>
           </div>
           <div className="lg:w-[350px]">
@@ -972,7 +1061,7 @@ export default function App() {
     };
 
     const handleCopyDetails = (order) => {
-      const text = `NAMA: ${order.customerName}\nTEL: ${order.phone}\nALAMAT:\n${order.address}\n\nPOSKOD & NEGERI: ${order.region}`;
+      const text = `${order.customerName}\n${order.phone}\n\n${order.address}`;
       navigator.clipboard.writeText(text);
       alert("Maklumat pelanggan berjaya disalin!");
     };
@@ -1372,7 +1461,19 @@ export default function App() {
        const codeStr = formData.get('code').toUpperCase();
        if (promos.find(p => p.code === codeStr)) { alert("Kod ini sudah wujud!"); setIsAdding(false); return; }
 
-       const promoData = { code: codeStr, type: formData.get('type'), value: parseFloat(formData.get('value')), isActive: true };
+       const startDateVal = formData.get('startDate');
+       const endDateVal = formData.get('endDate');
+
+       const promoData = {
+         code: codeStr,
+         type: formData.get('type'),
+         value: parseFloat(formData.get('value')),
+         isActive: true,
+         campaignName: formData.get('campaignName') || '',
+         startDate: startDateVal ? new Date(startDateVal).toISOString() : null,
+         endDate: endDateVal ? new Date(endDateVal + 'T23:59:59').toISOString() : null,
+         usedBy: []
+       };
 
        try { await addDoc(collection(db, "promo_codes"), promoData); alert("Kod Promo Berjaya Ditambah!"); e.target.reset(); } catch (err) { alert(err.message); }
        setIsAdding(false);
@@ -1386,6 +1487,13 @@ export default function App() {
        if(window.confirm("Padam kod promo ini?")) await deleteDoc(doc(db, "promo_codes", id));
     };
 
+    const formatDateRange = (promo) => {
+       if (!promo.startDate && !promo.endDate) return 'Tiada had tempoh';
+       const start = promo.startDate ? new Date(promo.startDate).toLocaleDateString('en-GB') : '...';
+       const end = promo.endDate ? new Date(promo.endDate).toLocaleDateString('en-GB') : '...';
+       return `${start} - ${end}`;
+    };
+
     return (
        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           <h1 className="text-xl font-black text-slate-900 mb-5">Manage Promo Codes</h1>
@@ -1393,6 +1501,7 @@ export default function App() {
              <div className="lg:col-span-1 bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-fit">
                 <h2 className="font-bold text-sm mb-4 text-slate-800">Cipta Kod Promo Baharu</h2>
                 <form onSubmit={handleAddPromo} className="space-y-3">
+                   <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Nama Kempen</label><input name="campaignName" placeholder="Cth: Promosi Merdeka" className="w-full border border-slate-200 rounded p-2 text-xs outline-none" /></div>
                    <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">KOD PROMO</label><input required name="code" placeholder="Cth: MERDEKA10" className="w-full border border-slate-200 rounded p-2 text-xs outline-none uppercase" /></div>
                    <div>
                       <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Jenis Diskaun</label>
@@ -1402,6 +1511,11 @@ export default function App() {
                       </select>
                    </div>
                    <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Nilai Diskaun</label><input required type="number" step="0.01" name="value" placeholder="Cth: 10" className="w-full border border-slate-200 rounded p-2 text-xs outline-none" /></div>
+                   <div className="grid grid-cols-2 gap-2">
+                     <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Mula Kempen</label><input type="date" name="startDate" className="w-full border border-slate-200 rounded p-2 text-xs outline-none" /></div>
+                     <div><label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Tamat Kempen</label><input type="date" name="endDate" className="w-full border border-slate-200 rounded p-2 text-xs outline-none" /></div>
+                   </div>
+                   <p className="text-[9px] text-slate-400 italic">Kosongkan tarikh jika kod promo tiada had tempoh.</p>
                    <button disabled={isAdding} type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded text-xs transition-colors mt-2">{isAdding ? 'Menyimpan...' : 'Cipta Kod'}</button>
                 </form>
              </div>
@@ -1409,14 +1523,19 @@ export default function App() {
              <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 <table className="w-full text-left text-sm whitespace-nowrap">
                    <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[9px] tracking-wider border-b border-slate-100">
-                      <tr><th className="p-3 pl-5">Kod Promo</th><th className="p-3">Nilai Diskaun</th><th className="p-3">Status</th><th className="p-3">Tindakan</th></tr>
+                      <tr><th className="p-3 pl-5">Kod Promo</th><th className="p-3">Nilai Diskaun</th><th className="p-3">Tempoh Kempen</th><th className="p-3">Digunakan</th><th className="p-3">Status</th><th className="p-3">Tindakan</th></tr>
                    </thead>
                    <tbody className="divide-y divide-slate-100 text-xs">
-                      {promos.length === 0 && <tr><td colSpan="4" className="p-5 text-center text-slate-500">Tiada kod promo.</td></tr>}
+                      {promos.length === 0 && <tr><td colSpan="6" className="p-5 text-center text-slate-500">Tiada kod promo.</td></tr>}
                       {promos.map(promo => (
                          <tr key={promo.id}>
-                            <td className="p-3 pl-5 font-black text-blue-600">{promo.code}</td>
+                            <td className="p-3 pl-5">
+                              <span className="font-black text-blue-600 block">{promo.code}</span>
+                              {promo.campaignName && <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{promo.campaignName}</span>}
+                            </td>
                             <td className="p-3 font-bold text-slate-700">{promo.type === 'percentage' ? `${promo.value}%` : `RM ${promo.value.toFixed(2)}`}</td>
+                            <td className="p-3 text-[10px] font-medium text-slate-500">{formatDateRange(promo)}</td>
+                            <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded">{(promo.usedBy || []).length}x pelanggan</span></td>
                             <td className="p-3"><button onClick={() => togglePromoStatus(promo.id, promo.isActive)} className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest ${promo.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>{promo.isActive ? 'Aktif' : 'Tutup'}</button></td>
                             <td className="p-3"><button onClick={() => deletePromo(promo.id)} className="text-red-500 bg-red-50 p-1.5 rounded hover:bg-red-100 transition-colors"><Icons.Trash /></button></td>
                          </tr>
