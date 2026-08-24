@@ -417,6 +417,17 @@ export default function App() {
   const cartSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const cartTotalWeight = cart.reduce((sum, item) => sum + ((item.weight || 100) * item.quantity), 0);
 
+  // Masks roughly half of each name segment for privacy in public reviews
+  // e.g. "Nabillah Ghazali" -> "Nabi**** Ghaz***"
+  // Masks a name, keeping only the first 3 letters visible
+  // e.g. "Nabillah Ghazali" -> "Nab***"
+  const maskName = (name) => {
+    if (!name) return 'Pengguna';
+    const trimmed = name.trim();
+    if (trimmed.length <= 3) return trimmed + '***';
+    return trimmed.slice(0, 3) + '***';
+  };
+
   const handleLogin = async () => {
     try { await signInWithPopup(auth, googleProvider); } 
     catch (error) { console.error("Login failed:", error); }
@@ -850,7 +861,7 @@ export default function App() {
                  <div key={r.id} className="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
                     <div className="flex items-center gap-2 mb-1">
                       <div className="flex gap-0.5">{[1,2,3,4,5].map(star => <Icons.Star key={star} filled={star <= r.rating} />)}</div>
-                      <span className="font-bold text-xs text-slate-800">{r.userName}</span>
+                      <span className="font-bold text-xs text-slate-800">{maskName(r.userName)}</span>
                       <span className="text-[10px] text-slate-400 ml-auto">{new Date(r.date).toLocaleDateString('en-GB')}</span>
                     </div>
                     <p className="text-sm text-slate-600 mt-2">{r.comment}</p>
