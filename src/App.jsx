@@ -591,12 +591,30 @@ export default function App() {
 
   const HomeView = () => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('ALL');
     const [heroMounted, setHeroMounted] = useState(false);
     const [heroTilt, setHeroTilt] = useState({ x: 0, y: 0 });
-    const filteredProducts = products.filter(product => 
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      product.category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+
+    const categoryPills = ['ALL', ...MOCK_CATEGORIES];
+
+    const bestSellers = [...products]
+      .filter(p => (p.totalSold || 0) > 0)
+      .sort((a, b) => (b.totalSold || 0) - (a.totalSold || 0))
+      .slice(0, 4);
+    const bestSellerIds = new Set(bestSellers.map(p => p.id));
+
+    const filteredProducts = products
+      .filter(product => 
+        (product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+         product.category.toLowerCase().includes(searchTerm.toLowerCase())) &&
+        (selectedCategory === 'ALL' || product.category === selectedCategory)
+      )
+      .sort((a, b) => {
+        const idxA = MOCK_CATEGORIES.indexOf(a.category);
+        const idxB = MOCK_CATEGORIES.indexOf(b.category);
+        if (idxA !== idxB) return idxA - idxB;
+        return a.name.localeCompare(b.name);
+      });
 
     useEffect(() => {
       const t = setTimeout(() => setHeroMounted(true), 60);
@@ -620,6 +638,8 @@ export default function App() {
           .animate-float-slow { animation: floatSlow 6s ease-in-out infinite; }
           .animate-float-slow-reverse { animation: floatSlowReverse 7s ease-in-out infinite; }
           .animate-ping-slow { animation: pingSlow 2.4s cubic-bezier(0,0,0.2,1) infinite; }
+          .scrollbar-hide::-webkit-scrollbar { display: none; }
+          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         `}</style>
         <PromoBanner />
         <div 
@@ -659,8 +679,30 @@ export default function App() {
           </div>
         </div>
 
-        <div id="product-grid" className="py-10 md:py-14">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        {bestSellers.length > 0 && (
+          <div className="pt-8 pb-2">
+            <h2 className="text-xl md:text-2xl font-semibold text-[#1d1d1f] tracking-tight mb-4 flex items-center gap-2">
+              <span>🔥</span> Produk Terlaris
+            </h2>
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+              {bestSellers.map(product => (
+                <div key={product.id} onClick={() => navigateTo('product', product)} className="min-w-[190px] max-w-[190px] shrink-0 bg-white rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/70 hover:-translate-y-0.5">
+                  <div className="relative aspect-square overflow-hidden bg-[#f5f5f7] flex items-center justify-center p-5">
+                    <img src={product.image || 'https://placehold.co/400x400?text=No+Image'} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={product.name} className="w-full h-full object-contain" />
+                    <div className="absolute top-2.5 right-2.5 bg-[#ff9f0a] text-white text-[9px] font-semibold px-2 py-1 rounded-full uppercase tracking-wide shadow-sm">🔥 Terlaris</div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-[#1d1d1f] text-[13px] leading-snug mb-1 line-clamp-1">{product.name}</h3>
+                    <span className="text-sm font-semibold text-[#1d1d1f]">RM {product.price.toFixed(2)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div id="product-grid" className="py-8 md:py-12">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-5 gap-4">
             <h2 className="text-2xl md:text-3xl font-semibold text-[#1d1d1f] tracking-tight w-full md:w-auto">Semua Produk</h2>
             <div className="relative w-full md:w-80">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#86868b]"><Icons.Search /></div>
@@ -672,9 +714,21 @@ export default function App() {
             </div>
           </div>
 
+          <div className="flex gap-2 overflow-x-auto pb-1 mb-6 scrollbar-hide">
+            {categoryPills.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors shrink-0 ${selectedCategory === cat ? 'bg-[#1d1d1f] text-white' : 'bg-white text-[#424245] border border-slate-200 hover:bg-slate-50'}`}
+              >
+                {cat === 'ALL' ? 'Semua' : cat}
+              </button>
+            ))}
+          </div>
+
           {filteredProducts.length === 0 ? (
             <div className="p-10 bg-white border border-slate-100 rounded-3xl text-[#86868b] text-center text-sm">
-              {searchTerm ? `Tiada produk dijumpai untuk carian "${searchTerm}".` : 'No products available at the moment.'}
+              {searchTerm ? `Tiada produk dijumpai untuk carian "${searchTerm}".` : 'Tiada produk dalam kategori ini buat masa ini.'}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -683,9 +737,11 @@ export default function App() {
                   <div className="relative aspect-square overflow-hidden bg-[#f5f5f7] flex items-center justify-center p-7 cursor-pointer" onClick={() => navigateTo('product', product)}>
                     <img src={product.image || 'https://placehold.co/400x400?text=No+Image'} onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x400?text=Error'; }} alt={product.name} className="w-full h-full object-contain hover:scale-105 transition-transform duration-500" />
                     <div className="absolute top-3 left-3 bg-white/90 backdrop-blur text-[9px] font-semibold px-2.5 py-1 rounded-full text-[#424245] uppercase tracking-wide">{product.category}</div>
-                    {product.originalPrice && product.originalPrice > product.price && (
+                    {bestSellerIds.has(product.id) ? (
+                      <div className="absolute top-3 right-3 bg-[#ff9f0a] text-white text-[9px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide shadow-sm">🔥 Terlaris</div>
+                    ) : product.originalPrice && product.originalPrice > product.price ? (
                       <div className="absolute top-3 right-3 bg-[#ff3b30] text-white text-[9px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide shadow-sm">Sale</div>
-                    )}
+                    ) : null}
                   </div>
                   <div className="p-5 flex-grow flex flex-col justify-between">
                     <div>
@@ -980,7 +1036,7 @@ export default function App() {
         };
         
         await addDoc(collection(db, "orders"), orderData);
-        for (const item of cart) { await updateDoc(doc(db, "products", item.id), { stock: increment(-item.quantity) }); }
+        for (const item of cart) { await updateDoc(doc(db, "products", item.id), { stock: increment(-item.quantity), totalSold: increment(item.quantity) }); }
 
         // Lock the promo code to this user so it can't be reused
         if (appliedPromo && user?.email) {
