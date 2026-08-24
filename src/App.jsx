@@ -878,51 +878,56 @@ export default function App() {
     }, [user]);
 
     const handleApplyPromo = async () => {
-       if(!promoInput) return;
+       if(!promoInput) { alert("Sila masukkan kod promo dahulu."); return; }
 
        if(!user) {
           alert("Sila log masuk dahulu untuk menggunakan kod promo.");
           return;
        }
 
-       const q = query(collection(db, "promo_codes"), where("code", "==", promoInput.toUpperCase()));
-       const snap = await getDocs(q);
-       if(snap.empty) {
-          alert("Maaf, kod promo tidak sah.");
-          setAppliedPromo(null);
-          return;
-       }
+       try {
+         const q = query(collection(db, "promo_codes"), where("code", "==", promoInput.toUpperCase()));
+         const snap = await getDocs(q);
+         if(snap.empty) {
+            alert("Maaf, kod promo tidak sah.");
+            setAppliedPromo(null);
+            return;
+         }
 
-       const promoDocSnap = snap.docs[0];
-       const promoData = { id: promoDocSnap.id, ...promoDocSnap.data() };
+         const promoDocSnap = snap.docs[0];
+         const promoData = { id: promoDocSnap.id, ...promoDocSnap.data() };
 
-       if(!promoData.isActive) {
-          alert("Maaf, kod promo ini tidak lagi aktif.");
-          setAppliedPromo(null);
-          return;
-       }
+         if(!promoData.isActive) {
+            alert("Maaf, kod promo ini tidak lagi aktif.");
+            setAppliedPromo(null);
+            return;
+         }
 
-       const now = new Date();
-       if(promoData.startDate && new Date(promoData.startDate) > now) {
-          alert("Kod promo ini belum bermula lagi.");
-          setAppliedPromo(null);
-          return;
-       }
-       if(promoData.endDate && new Date(promoData.endDate) < now) {
-          alert("Maaf, kempen kod promo ini telah tamat.");
-          setAppliedPromo(null);
-          return;
-       }
+         const now = new Date();
+         if(promoData.startDate && new Date(promoData.startDate) > now) {
+            alert("Kod promo ini belum bermula lagi.");
+            setAppliedPromo(null);
+            return;
+         }
+         if(promoData.endDate && new Date(promoData.endDate) < now) {
+            alert("Maaf, kempen kod promo ini telah tamat.");
+            setAppliedPromo(null);
+            return;
+         }
 
-       const alreadyUsed = (promoData.usedBy || []).includes(user.email);
-       if(alreadyUsed) {
-          alert("Anda sudah pernah guna kod promo ini sebelum ini. Setiap pelanggan hanya boleh guna sekali sahaja.");
-          setAppliedPromo(null);
-          return;
-       }
+         const alreadyUsed = (promoData.usedBy || []).includes(user.email);
+         if(alreadyUsed) {
+            alert("Anda sudah pernah guna kod promo ini sebelum ini. Setiap pelanggan hanya boleh guna sekali sahaja.");
+            setAppliedPromo(null);
+            return;
+         }
 
-       setAppliedPromo(promoData);
-       alert("Kod Promo Berjaya Digunakan!");
+         setAppliedPromo(promoData);
+         alert("Kod Promo Berjaya Digunakan!");
+       } catch (err) {
+         console.error("Promo redemption error:", err);
+         alert("Ralat semasa menyemak kod promo: " + err.message + "\n\n(Kod ralat: " + (err.code || 'unknown') + ")");
+       }
     };
 
     let shippingFee = 0;
