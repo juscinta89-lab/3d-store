@@ -1,0 +1,12 @@
+.document-paper { overflow-wrap: anywhere; }
+.document-items th, .document-items td { padding: 12px 8px; }
+.document-items th:not(:first-child), .document-items td:not(:first-child) { text-align: right; }
+@media print {
+  body:has(.document-page) * { visibility: hidden; }
+  body:has(.document-page) .document-paper, body:has(.document-page) .document-paper * { visibility: visible; }
+  body:has(.document-page) .document-paper { position: absolute; inset: 0 auto auto 0; width: 100%; margin: 0; padding: 10mm; border: 0; border-radius: 0; box-shadow: none; }
+  .document-controls { display: none; }
+  .document-paper .overflow-x-auto { overflow: visible; }
+  .document-paper tr, .document-paper footer, .document-paper dl { break-inside: avoid; }
+  .document-paper thead { display: table-header-group; }
+}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AdminDocuments from './AdminDocuments';
 import { db, auth, googleProvider, storage } from './firebase';
 import { 
   collection, getDocs, addDoc, updateDoc, doc, deleteDoc, onSnapshot, query, orderBy, increment, where, setDoc, getDoc, arrayUnion 
@@ -505,6 +506,7 @@ export default function App() {
                 <div className="flex items-center gap-3"><Icons.MessageSquare /> Manage Quotes</div>
                 {customRequests.filter(r=>r.status==='NEW').length > 0 && <span className="bg-[#ff3b30] text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full">{customRequests.filter(r=>r.status==='NEW').length}</span>}
               </button>
+              <button onClick={() => navigateTo('admin_documents')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-colors ${view === 'admin_documents' ? 'bg-[#1d1d1f] text-white' : 'text-[#424245] hover:bg-[#f5f5f7]'}`}><Icons.Printer /> Resit & Quotation</button>
               <button onClick={() => navigateTo('admin_products')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-colors ${view === 'admin_products' ? 'bg-[#1d1d1f] text-white' : 'text-[#424245] hover:bg-[#f5f5f7]'}`}><Icons.Box /> Manage Products</button>
               <button onClick={() => navigateTo('admin_promos')} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-colors ${view === 'admin_promos' ? 'bg-[#1d1d1f] text-white' : 'text-[#424245] hover:bg-[#f5f5f7]'}`}><Icons.Ticket /> Manage Promos</button>
             </>
@@ -1967,6 +1969,7 @@ export default function App() {
         {view === 'admin_dashboard' && <AdminDashboardView />}
         {view === 'admin_orders' && <AdminOrdersView orders={orders} navigateTo={navigateTo} />}
         {view === 'admin_quotes' && <AdminQuotesView />}
+        {view === 'admin_documents' && user?.role === 'admin' && <AdminDocuments user={user} orders={orders} products={products} />}
         {view === 'admin_products' && <AdminProductsView />}
         {view === 'admin_promos' && <AdminPromosView />}
         {view === 'receipt' && <ReceiptView />}
