@@ -4,7 +4,9 @@ Admin opens **Administration → Resit & Quotation** to create a document manual
 
 Saved documents can be reopened from history and printed using **Cetak / Simpan PDF** (choose Save as PDF in the browser print dialog). New documents receive unique `RCT` / `QUO` numbers. Saved records are read-only in the UI. The old customer order invoice remains unchanged.
 
-## Firebase setup required before live use
+## Firebase deployment status
+
+On 22 September 2026, the adminDocuments rules below were deployed to project `d-store-44941`, preserving all existing collection rules. The deployed source was verified and unauthenticated reads returned HTTP 403. The frontend deployment remains blocked by GitHub write authentication.
 
 Records use the new `adminDocuments` collection. The repository does not contain the deployed Firestore rules or deployment credentials. Merge the following match block **inside the existing** `/databases/{database}/documents` block in Firebase Console → Firestore → Rules. Preserve all existing collection rules. Ensure no broader wildcard rule grants non-admin access to this collection: Firestore allows access if ANY matching rule permits it.
 
@@ -26,7 +28,7 @@ match /adminDocuments/{documentId} {
 }
 ```
 
-Verify in the rules simulator that signed-out users and customers cannot read or write documents, and the verified admin can create/read. Live Firebase persistence and authenticated UI must be checked with the admin account after applying these rules; this implementation does not deploy Firebase rules.
+Verify in the rules simulator that signed-out users and customers cannot read or write documents, and the verified admin can create/read. Live Firebase persistence and authenticated UI must be checked with the admin account after applying these rules; authenticated save/reopen testing remains pending frontend deployment.
 
 ## Validation
 
