@@ -15,7 +15,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 const WHATSAPP_NUMBER = "60194155722"; 
 const ADMIN_EMAILS = ['juscinta89@gmail.com']; 
 const QR_PAYMENT_URL = "https://i.postimg.cc/wjk126Zs/qr-code.png"; 
-const TELEGRAM_BOT_TOKEN = "8636588086:AAHTfHyVL5xCjBMG3R17oAaaeIzgwmodSEw"; 
+const TELEGRAM_BOT_TOKEN = "8999152853:AAEVAhajpO_e86EmW8wN458QZaOXPBAMVJ0"; 
 const TELEGRAM_CHAT_ID = "-5504733427"; 
 const RECAPTCHA_SITE_KEY = "6LdqCo4tAAAAAF_VE2TTRCIo41RARvKcoBRP-DoC"; 
 
